@@ -1,0 +1,1 @@
+{"type":"record","name":"Flat02Record","fields":[{"name":"comNumber","type":"long"},{"name":"comName","type":"string"},{"name":"comAmount","type":{"type":"bytes","logicalType":"decimal","precision":7,"scale":2}},{"name":"comArray","type":{"type":"array","items":"int"}}],"namespace":"legstar.avro.test.flat02"}

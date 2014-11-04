@@ -1,0 +1,28 @@
+       01 ALLTYPES-RECORD.
+          05 S-STRING   PIC X(4).
+          05 S-BINARY   PIC X(4).
+          05 S-SHORT    PIC S9(4) COMP.
+          05 S-USHORT   PIC 9(4) COMP.
+          05 S-INT      PIC S9(9) COMP.
+          05 S-UINT     PIC 9(9) COMP.
+          05 S-LONG     PIC S9(18) COMP-3.
+          05 S-ULONG    PIC 9(18) COMP-3.
+          05 S-XLONG    PIC S9(31) COMP-3.
+          05 S-UXLONG   PIC 9(31) COMP-3.
+          05 S-DEC      PIC 9(7)V99 COMP-3.
+          05 S-FLOAT    COMP-1.          
+          05 S-DOUBLE   COMP-2. 
+                   
+          05 A-STRING   OCCURS 2 PIC X(4).
+          05 A-BINARY   OCCURS 2 PIC X(4).
+          05 A-SHORT    OCCURS 2 PIC S9(4) COMP.
+          05 A-USHORT   OCCURS 2 PIC 9(4) COMP.
+          05 A-INT      OCCURS 2 PIC S9(9) COMP.
+          05 A-UINT     OCCURS 2 PIC 9(9) COMP.
+          05 A-LONG     OCCURS 2 PIC S9(18) COMP-3.
+          05 A-ULONG    OCCURS 2 PIC 9(18) COMP-3.
+          05 A-XLONG    OCCURS 2 PIC S9(31) COMP-3.
+          05 A-UXLONG   OCCURS 2 PIC 9(31) COMP-3.
+          05 A-DEC      OCCURS 2 PIC 9(7)V99 COMP-3.
+          05 A-FLOAT    OCCURS 2 COMP-1.          
+          05 A-DOUBLE   OCCURS 2 COMP-2. 

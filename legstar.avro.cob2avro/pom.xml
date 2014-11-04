@@ -1,0 +1,317 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.legsem</groupId>
+    <artifactId>legstar.avro</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>legstar.avro.cob2avro</artifactId>
+  <packaging>jar</packaging>
+
+  <name>legstar.avro.cob2avro</name>
+
+  <dependencies>
+
+    <!-- LegStar -->
+    <dependency>
+      <groupId>com.legsem.legstar</groupId>
+      <artifactId>legstar-cob2trans</artifactId>
+    </dependency>
+
+    <!-- Apache avro -->
+    <dependency>
+      <groupId>org.apache.avro</groupId>
+      <artifactId>avro</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.avro</groupId>
+      <artifactId>avro-compiler</artifactId>
+    </dependency>
+
+    <!-- Avro LegStar Translator -->
+    <dependency>
+      <groupId>com.legsem</groupId>
+      <artifactId>legstar.avro.translator</artifactId>
+    </dependency>
+
+    <!-- Apache utilities -->
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+    </dependency>
+
+    <!-- Tests -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+
+    <!-- Used for alltypes.xsl -->
+    <testResources>
+        <testResource>
+            <directory>src/test/resources</directory>
+            <filtering>true</filtering>
+        </testResource>
+    </testResources>
+
+    <plugins>
+
+      <!-- Filters the cob2trans.properties file for cob2trans -->
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>2.6</version>
+        <executions>
+          <execution>
+            <id>copy-resources</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${basedir}/target/extra-resources</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>src/test/resources</directory>
+                  <filtering>true</filtering>
+                  <includes>
+                    <include>cob2trans.properties</include>
+                  </includes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Store maven classpath in a property for cob2trans -->
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>2.8</version>
+        <executions>
+          <execution>
+            <phase>validate</phase>
+            <goals>
+              <goal>build-classpath</goal>
+            </goals>
+            <configuration>
+              <outputProperty>maven.compile.classpath</outputProperty>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Invoke cob2trans for copybooks translation to XML schemas and code -->
+      <!-- When done (and after xml schemas have been gathered): -->
+      <!-- invoke Avro LegStar translator for Avro schema generation -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.3.2</version>
+
+        <executions>
+          <execution>
+            <id>cobol.translation</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <configuration>
+              <mainClass>com.legstar.coxb.cob2trans.exe.Cob2TransGeneratorMain</mainClass>
+              <commandlineArgs>-i ${basedir}/src/test/cobol -o ${project.build.directory}/cob2trans -c ${basedir}/target/extra-resources/cob2trans.properties -cp ${maven.compile.classpath}</commandlineArgs>
+              <systemProperties>
+                <systemProperty>
+                  <key>log4j.configuration</key>
+                  <value>file:///${basedir}/src/main/resources/log4j.properties</value>
+                </systemProperty>
+              </systemProperties>
+             </configuration>
+          </execution>
+
+          <execution>
+            <id>avro.schemas.generation</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <configuration>
+              <mainClass>com.legstar.avro.translator.Cob2AvroMain</mainClass>
+              <commandlineArgs>-i ${project.build.directory}/gen/xsd -o ${project.build.directory}/gen/avsc -np legstar.avro.test.specific</commandlineArgs>
+              <systemProperties>
+                <systemProperty>
+                  <key>log4j.configuration</key>
+                  <value>file:///${basedir}/src/main/resources/log4j.properties</value>
+                </systemProperty>
+              </systemProperties>
+             </configuration>
+          </execution>
+
+        </executions>
+      </plugin>
+
+      <!-- Move generated xml schemas and java sources to common folder -->
+      <!-- Finally generate the Avro specific classes out of the schemas -->
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.7</version>
+        <executions>
+
+          <execution>
+            <id>move-xml-schemas</id>
+            <phase>generate-sources</phase>
+            <configuration>
+              <target>
+                <move todir="${project.build.directory}/gen/xsd">
+                  <fileset dir="${project.build.directory}/cob2trans" >
+                      <include name="*/xsd/*.xsd"/>
+                  </fileset>
+                  <regexpmapper from="^(.*)[\\/]xsd[\\/](.*)\.xsd$$" to="\2.xsd"/>
+                </move>
+                <move todir="${project.build.directory}/gen/java">
+                  <fileset dir="${project.build.directory}/cob2trans" >
+                      <include name="*/src/**/*.java"/>
+                  </fileset>
+                  <regexpmapper from="^(.*)[\\/]src[\\/](.*)\.java$$" to="\2.java"/>
+                </move>
+              </target>
+            </configuration>
+            <goals>
+                <goal>run</goal>
+            </goals>
+          </execution>
+
+          <execution>
+            <id>avro.classes.generation</id>
+            <phase>process-sources</phase>
+            <configuration>
+                <target>
+                  <taskdef name="schemaTask" classname="org.apache.avro.compiler.specific.SchemaTask" classpath="${maven.compile.classpath}"/>
+                  <schemaTask destdir="${project.build.directory}/gen/java">
+                    <fileset dir="${project.build.directory}/gen/avsc" >
+                        <include name="*.avsc"/>
+                    </fileset>
+                  </schemaTask>
+                </target>
+             </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+
+        </executions>
+      </plugin>
+
+        <!-- Add generated java classes common folder as source folder -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>1.9</version>
+        <executions>
+          <execution>
+             <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${project.build.directory}/gen/java</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+
+    <pluginManagement>
+      <plugins>
+        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>
+                      build-helper-maven-plugin
+                    </artifactId>
+                    <versionRange>[1.9,)</versionRange>
+                    <goals>
+                      <goal>add-source</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>
+                      org.apache.maven.plugins
+                    </groupId>
+                    <artifactId>
+                      maven-antrun-plugin
+                    </artifactId>
+                    <versionRange>[1.7,)</versionRange>
+                    <goals>
+                      <goal>run</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>
+                      org.apache.maven.plugins
+                    </groupId>
+                    <artifactId>
+                      maven-dependency-plugin
+                    </artifactId>
+                    <versionRange>[2.8,)</versionRange>
+                    <goals>
+                      <goal>build-classpath</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>
+                      exec-maven-plugin
+                    </artifactId>
+                    <versionRange>
+                      [1.3.2,)
+                    </versionRange>
+                    <goals>
+                      <goal>java</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+
+</project>

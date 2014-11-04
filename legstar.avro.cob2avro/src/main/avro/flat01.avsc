@@ -1,0 +1,9 @@
+{"namespace": "legstar.avro.test",
+ "type": "record",
+ "name": "Flat01Record",
+ "fields": [
+     {"name": "ComNumber", "type": "int","cobolElement" : { "cobolName":"COM-NUMBER", "levelNumber":5, "picture":"9(6)", "signed":false,  "srceLine":2, "totalDigits":6, "type":"ZONED_DECIMAL_ITEM"}},
+     {"name": "ComName",  "type": "string"},
+     {"name": "ComAmount", "type": "bytes", "logicalType": "decimal", "precision": 7, "scale": 2}
+ ]
+}
