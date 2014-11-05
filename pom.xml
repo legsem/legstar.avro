@@ -21,6 +21,7 @@
 
   <modules>
       <module>legstar.avro.translator</module>
+      <module>legstar.avro.generator</module>
       <module>legstar.avro.cob2avro</module>
   </modules>
 
