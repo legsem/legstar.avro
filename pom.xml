@@ -60,6 +60,13 @@
         <version>${project.version}</version>
       </dependency>
 
+      <!-- Avro LegStar Generator -->
+      <dependency>
+        <groupId>com.legsem</groupId>
+        <artifactId>legstar.avro.generator</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
       <!-- JSON -->
       <dependency>
           <groupId>org.codehaus.jackson</groupId>

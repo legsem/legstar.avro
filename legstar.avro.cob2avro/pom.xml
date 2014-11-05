@@ -31,10 +31,10 @@
       <artifactId>avro-compiler</artifactId>
     </dependency>
 
-    <!-- Avro LegStar Translator -->
+    <!-- Avro LegStar Generator -->
     <dependency>
       <groupId>com.legsem</groupId>
-      <artifactId>legstar.avro.translator</artifactId>
+      <artifactId>legstar.avro.generator</artifactId>
     </dependency>
 
     <!-- Apache utilities -->
@@ -64,7 +64,7 @@
 
     <plugins>
 
-      <!-- Filters the cob2trans.properties file for cob2trans -->
+      <!-- Filters the cob2avrotrans file for cob2avrotrans -->
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
         <version>2.6</version>
@@ -82,7 +82,7 @@
                   <directory>src/test/resources</directory>
                   <filtering>true</filtering>
                   <includes>
-                    <include>cob2trans.properties</include>
+                    <include>cob2avrotrans.properties</include>
                   </includes>
                 </resource>
               </resources>
@@ -108,14 +108,11 @@
         </executions>
       </plugin>
 
-      <!-- Invoke cob2trans for copybooks translation to XML schemas and code -->
-      <!-- When done (and after xml schemas have been gathered): -->
-      <!-- invoke Avro LegStar translator for Avro schema generation -->
+      <!-- Invoke cob2avrotrans for copybooks translation to Avro schemas and code -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
         <version>1.3.2</version>
-
         <executions>
           <execution>
             <id>cobol.translation</id>
@@ -124,8 +121,8 @@
               <goal>java</goal>
             </goals>
             <configuration>
-              <mainClass>com.legstar.coxb.cob2trans.exe.Cob2TransGeneratorMain</mainClass>
-              <commandlineArgs>-i ${basedir}/src/test/cobol -o ${project.build.directory}/cob2trans -c ${basedir}/target/extra-resources/cob2trans.properties -cp ${maven.compile.classpath}</commandlineArgs>
+              <mainClass>com.legstar.avro.generator.Cob2AvroTransMain</mainClass>
+              <commandlineArgs>-i ${basedir}/src/test/cobol -o ${project.build.directory}/gen -c ${basedir}/target/extra-resources/cob2avrotrans.properties -cp ${maven.compile.classpath}</commandlineArgs>
               <systemProperties>
                 <systemProperty>
                   <key>log4j.configuration</key>
@@ -134,77 +131,6 @@
               </systemProperties>
              </configuration>
           </execution>
-
-          <execution>
-            <id>avro.schemas.generation</id>
-            <phase>process-sources</phase>
-            <goals>
-              <goal>java</goal>
-            </goals>
-            <configuration>
-              <mainClass>com.legstar.avro.translator.Cob2AvroMain</mainClass>
-              <commandlineArgs>-i ${project.build.directory}/gen/xsd -o ${project.build.directory}/gen/avsc -np legstar.avro.test.specific</commandlineArgs>
-              <systemProperties>
-                <systemProperty>
-                  <key>log4j.configuration</key>
-                  <value>file:///${basedir}/src/main/resources/log4j.properties</value>
-                </systemProperty>
-              </systemProperties>
-             </configuration>
-          </execution>
-
-        </executions>
-      </plugin>
-
-      <!-- Move generated xml schemas and java sources to common folder -->
-      <!-- Finally generate the Avro specific classes out of the schemas -->
-      <plugin>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <version>1.7</version>
-        <executions>
-
-          <execution>
-            <id>move-xml-schemas</id>
-            <phase>generate-sources</phase>
-            <configuration>
-              <target>
-                <move todir="${project.build.directory}/gen/xsd">
-                  <fileset dir="${project.build.directory}/cob2trans" >
-                      <include name="*/xsd/*.xsd"/>
-                  </fileset>
-                  <regexpmapper from="^(.*)[\\/]xsd[\\/](.*)\.xsd$$" to="\2.xsd"/>
-                </move>
-                <move todir="${project.build.directory}/gen/java">
-                  <fileset dir="${project.build.directory}/cob2trans" >
-                      <include name="*/src/**/*.java"/>
-                  </fileset>
-                  <regexpmapper from="^(.*)[\\/]src[\\/](.*)\.java$$" to="\2.java"/>
-                </move>
-              </target>
-            </configuration>
-            <goals>
-                <goal>run</goal>
-            </goals>
-          </execution>
-
-          <execution>
-            <id>avro.classes.generation</id>
-            <phase>process-sources</phase>
-            <configuration>
-                <target>
-                  <taskdef name="schemaTask" classname="org.apache.avro.compiler.specific.SchemaTask" classpath="${maven.compile.classpath}"/>
-                  <schemaTask destdir="${project.build.directory}/gen/java">
-                    <fileset dir="${project.build.directory}/gen/avsc" >
-                        <include name="*.avsc"/>
-                    </fileset>
-                  </schemaTask>
-                </target>
-             </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
-
         </executions>
       </plugin>
 
