@@ -36,8 +36,6 @@ import com.legstar.coxb.util.NameUtil;
  * A special version of an XSD navigator that will process array occurrences.
  * This is needed when each occurrence of an array must produce a different
  * output.
- * <p/>
- * TODO process nullable values (strings, arrays depending on, choices, ...)
  * 
  */
 public class Cob2AvroVisitor {

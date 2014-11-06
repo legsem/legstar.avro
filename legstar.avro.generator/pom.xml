@@ -78,28 +78,20 @@
   
       <plugins>
   
-          <!-- Add a packaged executable uber-jar -->
+          <!-- Make the jar executable (referencing a lib folder for dependencies) -->
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-shade-plugin</artifactId>
-            <version>2.3</version>
-            <executions>
-              <execution>
-                <phase>package</phase>
-                <goals>
-                  <goal>shade</goal>
-                </goals>
-                <configuration>
-                  <shadedArtifactAttached>true</shadedArtifactAttached>
-                  <shadedClassifierName>exe</shadedClassifierName>
-                  <transformers>
-                    <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                      <mainClass>com.legstar.avro.generator.Cob2AvroTransMain</mainClass>
-                    </transformer>
-                  </transformers>
-                </configuration>
-              </execution>
-            </executions>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-jar-plugin</artifactId>
+              <version>2.5</version>
+              <configuration>
+                  <archive>
+                      <manifest>
+                          <addClasspath>true</addClasspath>
+                          <classpathPrefix>lib/</classpathPrefix>
+                          <mainClass>com.legstar.avro.generator.Cob2AvroTransMain</mainClass>
+                      </manifest>
+                  </archive>
+              </configuration>
           </plugin>
 
       </plugins>

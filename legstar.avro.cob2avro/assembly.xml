@@ -1,0 +1,24 @@
+<!--
+Assembly descriptor for the distribution.
+-->
+<assembly>
+    <id>zip</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+    <includeBaseDirectory>true</includeBaseDirectory>
+
+    <fileSets>
+        <fileSet>
+            <directory>src/main/samples</directory>
+            <outputDirectory>/samples</outputDirectory>
+        </fileSet>
+    </fileSets>
+
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>lib</outputDirectory>
+            <scope>runtime</scope>
+        </dependencySet>
+     </dependencySets>
+</assembly>

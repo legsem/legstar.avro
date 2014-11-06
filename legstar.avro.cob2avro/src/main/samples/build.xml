@@ -1,0 +1,49 @@
+<project basedir="." default="run">
+
+    <property name="cobdir" location="cobol"/>
+    <property name="javadir" location="java"/>
+    <property name="gendir" location="gen"/>
+    <property name="genjavadir" location="${gendir}/java"/>
+    <property name="bindir" location="bin"/>
+    <path id="project.class.path">
+        <fileset dir="../lib">
+            <include name="*.jar"/>
+        </fileset>
+    </path>    
+    <property name="classpath" refid="project.class.path"/>
+
+    <target name="init">
+        <mkdir dir="${bindir}"/>
+    </target>
+
+    <target name="generate" depends="init">
+        <java classname="com.legstar.avro.generator.Cob2AvroTransMain" fork="true" failonerror="true">
+            <arg line="-i ${cobdir} -o ${gendir} -cp ${classpath}"/>
+            <classpath path="${classpath}"/>
+        </java>
+    </target>
+
+    <target name="gencompile" depends="generate">
+        <javac srcdir="${genjavadir}" destdir="${bindir}" source="1.6">
+            <classpath path="${classpath}"/>
+        </javac>
+    </target>
+
+    <target name="sampcompile" depends="gencompile">
+        <javac srcdir="${javadir}" destdir="${bindir}" source="1.6">
+            <classpath>
+                <pathelement path="${classpath}"/>
+                <pathelement location="${bindir}"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="run" depends="sampcompile">
+        <java classname="com.legstar.avro.cob2avro.samples.CustdatReader" fork="true" failonerror="true">
+            <classpath>
+                <pathelement path="${classpath}"/>
+                <pathelement location="${bindir}"/>
+            </classpath>
+        </java>
+    </target>
+</project>
