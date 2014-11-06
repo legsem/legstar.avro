@@ -1,5 +1,7 @@
 package com.legstar.avro.generator;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 
 import org.apache.commons.io.FileUtils;
@@ -20,7 +22,15 @@ public class Cob2AvroTransGeneratorTest {
 
     @Test
     public void testFlat01() throws Exception {
+        assertFalse(new File(TARGET_FOLDER, "avsc/flat01.avsc").exists());
+        assertFalse(new File(TARGET_FOLDER, "java/com/legstar/avro/specific/flat01/Flat01Record.java").exists());
+        assertFalse(new File(TARGET_FOLDER, "java/com/legstar/avro/beans/flat01/bind/Flat01RecordBinding.java").exists());
+
         Cob2AvroTransGenerator generator = new Cob2AvroTransGenerator();
         generator.generate(new File(COBOL_SOURCE_FOLDER, "FLAT01"), TARGET_FOLDER);
+
+        assertTrue(new File(TARGET_FOLDER, "avsc/flat01.avsc").exists());
+        assertTrue(new File(TARGET_FOLDER, "java/com/legstar/avro/specific/flat01/Flat01Record.java").exists());
+        assertTrue(new File(TARGET_FOLDER, "java/com/legstar/avro/beans/flat01/bind/Flat01RecordBinding.java").exists());
     }
 }

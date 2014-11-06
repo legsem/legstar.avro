@@ -112,7 +112,7 @@ public class Cob2AvroTransGenerator {
 
             // Gather generated sources and clean
             File xsdTargetFolder = new File(target, XSD_TARGET_SUB_FOLDER);
-            FileUtils.moveFileToDirectory(result.cob2xsdResult.xsdFile,
+            FileUtils.copyFileToDirectory(result.cob2xsdResult.xsdFile,
                     xsdTargetFolder, true);
             File javaTargetFolder = new File(target, JAVA_TARGET_SUB_FOLDER);
             FileUtils.copyDirectory(new File(cob2transTargetFolder, basename

@@ -46,7 +46,6 @@ import com.legstar.coxb.util.NameUtil;
 /**
  * Unmarshal mainframe data to an avro generic record.
  * <p/>
- * TODO process null
  * @NotThreadSafe 
  */
 public class Cob2AvroUnmarshalVisitor extends CobolElementVisitor {
@@ -177,7 +176,6 @@ public class Cob2AvroUnmarshalVisitor extends CobolElementVisitor {
     public void visit(ICobolChoiceBinding ce) throws HostException {
 
         log.debug("Start visiting choice type {}", ce.getBindingName());
-
 
         /*
          * Make sure there are no leftovers from a previous use of this binding
