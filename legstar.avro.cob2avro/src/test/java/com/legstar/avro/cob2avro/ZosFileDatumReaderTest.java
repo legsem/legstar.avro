@@ -9,14 +9,14 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 import legstar.avro.test.beans.cusdat.bind.CustomerDataBinding;
 import legstar.avro.test.specific.cusdat.CustomerData;
 
 public class ZosFileDatumReaderTest {
 
-    private static Logger log = LoggerFactory.getLogger(ZosFileDatumReaderTest.class);
-
+    private static Logger log = LoggerFactory
+            .getLogger(ZosFileDatumReaderTest.class);
+    
     @Test
     public void testReadCustdat() throws Exception {
         Schema schema = new Schema.Parser().parse(new File("target/gen/avsc/"
@@ -48,10 +48,11 @@ public class ZosFileDatumReaderTest {
         while (reader.hasNext()) {
             CustomerData specific = reader.next();
             count++;
-            log.info("Record num={} customer id={}", count, specific
-                    .getPersonalData().getCustomerName());
+            log.info("Record num={} customer id={}", specific.getCustomerId(),
+                    specific.getPersonalData().getCustomerName());
         }
         assertEquals(10000, count);
 
     }
+
 }
