@@ -6,7 +6,7 @@
         </xsl:copy>
     </xsl:template>
 
-    <!-- Change type from xsd:string to xsd:hexBinary -->
+    <!-- For alltypes#S-BINARY, change type from xsd:string to xsd:hexBinary -->
     <xsl:template match="*/xsd:restriction[../..//cb:cobolElement/@cobolName='S-BINARY']">
         <xsl:copy>
             <xsl:copy-of select="@*"/>
@@ -14,7 +14,7 @@
             <xsl:copy-of select="node()"/>
         </xsl:copy>
     </xsl:template>
-    <!--  Change the cobol type to OCTET_STREAM_ITEM -->
+    <!--  For alltypes#S-BINARY, change the cobol type to OCTET_STREAM_ITEM -->
     <xsl:template match="*/cb:cobolElement[@cobolName='S-BINARY']">
         <xsl:copy>
             <xsl:copy-of select="@*"/>

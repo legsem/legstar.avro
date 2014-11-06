@@ -30,11 +30,6 @@ import com.legstar.coxb.cob2trans.Cob2TransModel;
  * The intermediary COBOL-annotated XML schema produced by legstar is then translated to an Avro Schema.
  * <p/>
  * Finally the Avro compiler is invoked to produce the set of Avro specific classes.
- * <p/>
- * TODO:
- * <ul>
- * <li>Deal with xslts to inject custom code in legstar binding classes</li>
- * </ul>
  *
  */
 public class Cob2AvroTransGenerator {
