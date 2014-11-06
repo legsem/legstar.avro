@@ -2,12 +2,19 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.legsem</groupId>
+  <parent>
+      <groupId>org.sonatype.oss</groupId>
+      <artifactId>oss-parent</artifactId>
+      <version>5</version>
+  </parent>
+
+  <groupId>com.legsem.legstar</groupId>
   <artifactId>legstar.avro</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>legstar.avro</name>
+  <description>Translates COBOL structure to Avro schemas</description>
   <url>https://github.com/legsem/legstar.avro</url>
 
   <properties>
@@ -18,6 +25,70 @@
     <timestamp>${maven.build.timestamp}</timestamp>
     <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
   </properties>
+
+  <issueManagement>
+      <system>Github Issue Tracking</system>
+      <url>https://github.com/legsem/legstar.avro/issues</url>
+  </issueManagement>
+
+  <!-- Source control GIT on github -->
+  <scm>
+      <connection>scm:git:https://legsem@github.com/legsem/legstar.avro.git</connection>
+      <developerConnection>scm:git:https://legsem@github.com/legsem/legstar.avro.git</developerConnection>
+      <url>https://github.com/legsem/legstar.avro.git</url>
+      <tag>HEAD</tag>
+  </scm> 
+
+  <distributionManagement>
+      <site>
+          <id>legstar.avro.website</id>
+          <url>file:///${user.home}/${project.artifactId}/site</url>
+      </site>
+  </distributionManagement>
+
+  <mailingLists>
+      <mailingList>
+          <name>LegStar users mailing list</name>
+          <subscribe>http://groups.google.com/group/legstar-user/subscribe</subscribe>
+          <unsubscribe>http://groups.google.com/group/legstar-user/subscribe</unsubscribe>
+          <post>legstar-user@googlegroups.com</post>
+          <archive>http://groups.google.com/group/legstar-user/topics</archive>
+      </mailingList>
+      <mailingList>
+          <name>LegStar dev mailing list</name>
+          <subscribe>http://groups.google.com/group/legstar-dev/subscribe</subscribe>
+          <unsubscribe>http://groups.google.com/group/legstar-dev/subscribe</unsubscribe>
+          <post>legstar-dev@googlegroups.com</post>
+          <archive>http://groups.google.com/group/legstar-dev/topics</archive>
+      </mailingList>
+  </mailingLists>
+
+  <developers>
+      <developer>
+          <id>fady</id>
+          <name>Fady Moussallam</name>
+          <email>fady@NOSPAMlegsem.com</email>
+          <organization>Legsem.com</organization>
+          <roles>
+              <role>Project Manager</role>
+              <role>Architect</role>
+          </roles>
+          <timezone>+1</timezone>
+      </developer>
+  </developers>
+
+  <licenses>
+      <license>
+          <name>GNU AFFERO GENERAL PUBLIC LICENSE</name>
+          <url>http://www.gnu.org/licenses/agpl.txt</url>
+          <distribution>repo</distribution>
+      </license>
+  </licenses>
+
+  <organization>
+      <name>LegSem</name>
+      <url>http://www.legsem.com/</url>
+  </organization>
 
   <modules>
       <module>legstar.avro.translator</module>
@@ -136,6 +207,16 @@
             <configuration>
                 <source>1.6</source>
                 <target>1.6</target>
+            </configuration>
+        </plugin>
+
+        <!-- Release -->
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-release-plugin</artifactId>
+            <version>2.4.2</version>
+            <configuration>
+                <autoVersionSubmodules>true</autoVersionSubmodules>
             </configuration>
         </plugin>
 
