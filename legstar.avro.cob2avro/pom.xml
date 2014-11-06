@@ -33,7 +33,7 @@
 
     <!-- Avro LegStar Generator -->
     <dependency>
-      <groupId>com.legsem</groupId>
+      <groupId>com.legsem.legstar</groupId>
       <artifactId>legstar.avro.generator</artifactId>
     </dependency>
 

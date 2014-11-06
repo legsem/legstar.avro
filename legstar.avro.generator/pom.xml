@@ -33,7 +33,7 @@
 
     <!-- Avro LegStar Translator -->
     <dependency>
-      <groupId>com.legsem</groupId>
+      <groupId>com.legsem.legstar</groupId>
       <artifactId>legstar.avro.translator</artifactId>
     </dependency>
 

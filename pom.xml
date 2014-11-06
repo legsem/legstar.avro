@@ -126,14 +126,14 @@
 
       <!-- Avro LegStar Translator -->
       <dependency>
-        <groupId>com.legsem</groupId>
+        <groupId>com.legsem.legstar</groupId>
         <artifactId>legstar.avro.translator</artifactId>
         <version>${project.version}</version>
       </dependency>
 
       <!-- Avro LegStar Generator -->
       <dependency>
-        <groupId>com.legsem</groupId>
+        <groupId>com.legsem.legstar</groupId>
         <artifactId>legstar.avro.generator</artifactId>
         <version>${project.version}</version>
       </dependency>
