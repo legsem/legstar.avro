@@ -219,6 +219,13 @@
                 <autoVersionSubmodules>true</autoVersionSubmodules>
             </configuration>
         </plugin>
+        
+        <!-- Javadoc -->
+        <plugin>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>2.10.1</version>
+        </plugin>
+
 
       </plugins>
 

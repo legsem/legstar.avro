@@ -113,7 +113,7 @@ public class Cob2AvroTransGenerator {
             FileUtils.copyDirectory(new File(cob2transTargetFolder, basename
                     + "/" + cob2TransAvroModel.getSrcFolderName()),
                     javaTargetFolder, TrueFileFilter.INSTANCE);
-            FileUtils.forceDelete(cob2transTargetFolder);
+            FileUtils.forceDeleteOnExit(cob2transTargetFolder);
 
             // Generate Avro specific classes
             avroCompile(avscTargetFile, javaTargetFolder);
