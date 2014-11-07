@@ -14,7 +14,7 @@
   <packaging>pom</packaging>
 
   <name>legstar.avro</name>
-  <description>Translates COBOL structure to Avro schemas</description>
+  <description>Translates COBOL structures to Avro schemas. Converts Mainframe data to Avro records.</description>
   <url>https://github.com/legsem/legstar.avro</url>
 
   <properties>
@@ -220,13 +220,6 @@
             </configuration>
         </plugin>
         
-        <!-- Javadoc -->
-        <plugin>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <version>2.10.1</version>
-        </plugin>
-
-
       </plugins>
 
     </pluginManagement>

@@ -5,7 +5,7 @@ A COBOL to [Apache Avro](http://avro.apache.org/) translator based on [LegStar](
 
 ## Objectives
 
-* Provide a Translator from a COBOL copybook to an equivalent Apache Avro [Schema](http://avro.apache.org/docs/current/#schemas).
+* Provide a Translator from a [COBOL copybook](http://en.wikipedia.org/wiki/COBOL#Data_division) to an equivalent Apache [Avro Schema](http://avro.apache.org/docs/current/#schemas).
 
 * Provide Transformation classes to convert from mainframe data to Avro records.
 
@@ -15,6 +15,10 @@ The idea is that mainframe data might be useful in environments where Apache Avr
 
 * Java JDK 6 and above
 
-* Maven 3
+* Maven 3 for project build
+
+
+
+
 
 
