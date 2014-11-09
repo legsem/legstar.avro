@@ -13,7 +13,7 @@ legstar.avro
 
 ## Requirements
 
-* Java JDK 6 and above
+* Java JDK 6 and above (It is important that this is a JDK not a simple JRE)
 
 * Maven 3 for project build
 
@@ -39,6 +39,8 @@ legstar.avro
   From there, go to the samples folder and type:
 
 >   `ant`
+
+  You can get more information on the [CustdatReader sample provided on the wiki](https://github.com/legsem/legstar.avro/wiki/CustdatReader-sample)
 
 
 
