@@ -178,7 +178,7 @@ public class Cob2AvroTransGenerator {
 
         Schema.Parser parser = new Schema.Parser();
         Schema schema = parser.parse(avscFile);
-        SpecificCompiler compiler = new SpecificCompiler(schema);
+        SpecificCompiler compiler = new CustomSpecificCompiler(schema);
         compiler.setStringType(StringType.CharSequence);
         compiler.compileToDestination(avscFile, javaTargetFolder);
 

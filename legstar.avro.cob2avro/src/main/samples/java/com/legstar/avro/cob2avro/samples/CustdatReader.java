@@ -30,9 +30,16 @@ public class CustdatReader {
 
         while (reader.hasNext()) {
             CustomerData avroRecord = reader.next();
-            System.out.println("Record num=" + avroRecord.getCustomerId()
-                    + " customer name="
-                    + avroRecord.getPersonalData().getCustomerName());
+            System.out
+                .println("Record num="
+                        + avroRecord.getCustomerId()
+                        + ", customer name="
+                        + avroRecord.getPersonalData().getCustomerName()
+                        + ", transaction amount="
+                        + (avroRecord.getTransactions().getTransaction()
+                                .size() > 0 ? avroRecord.getTransactions()
+                                .getTransaction().get(0)
+                                .getTransactionAmount() : "none"));
         }
 
     }

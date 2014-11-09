@@ -16,7 +16,7 @@ public class ZosFileDatumReaderTest {
 
     private static Logger log = LoggerFactory
             .getLogger(ZosFileDatumReaderTest.class);
-    
+
     @Test
     public void testReadCustdat() throws Exception {
         Schema schema = new Schema.Parser().parse(new File("target/gen/avsc/"
@@ -48,8 +48,14 @@ public class ZosFileDatumReaderTest {
         while (reader.hasNext()) {
             CustomerData specific = reader.next();
             count++;
-            log.info("Record num={} customer id={}", specific.getCustomerId(),
-                    specific.getPersonalData().getCustomerName());
+            log.info(
+                    "Record customer id={}, customer name={}, transaction amount={}",
+                    specific.getCustomerId(), specific.getPersonalData()
+                            .getCustomerName(), specific.getTransactions()
+                            .getTransaction().size() > 0 ? specific
+                            .getTransactions().getTransaction().get(0)
+                            .getTransactionAmount() : "none");
+
         }
         assertEquals(10000, count);
 
