@@ -69,7 +69,11 @@ public class Cob2AvroTransMain {
      */
     public static void main(final String[] args) {
         Cob2AvroTransMain main = new Cob2AvroTransMain();
-        main.execute(args);
+        boolean success = main.execute(args);
+        if (!success) {
+            throw new RuntimeException("Cob2AvroTransMain failure");         
+        }
+        // System.exit(main.execute(args) ? 0 : 12);
     }
 
     /**
@@ -79,19 +83,22 @@ public class Cob2AvroTransMain {
      * command line options are invalid.
      * 
      * @param args translator options
+     * @return true if execution succeeded
      */
-    public void execute(final String[] args) {
+    public boolean execute(final String[] args) {
         Options options = createOptions();
+        boolean rc = true;
         if (collectOptions(options, args)) {
             setDefaults();
             Cob2AvroTransGenerator gen = new Cob2AvroTransGenerator();
             if (cobolInput.isDirectory()) {
-                gen.generate(FileUtils.listFiles(cobolInput, null, true),
+                rc &= gen.generate(FileUtils.listFiles(cobolInput, null, true),
                         output, configFile, classpath);
             } else {
-                gen.generate(cobolInput, output, configFile, classpath);
+                rc = gen.generate(cobolInput, output, configFile, classpath);
             }
         }
+        return rc;
     }
 
     /**
@@ -171,7 +178,7 @@ public class Cob2AvroTransMain {
             return false;
         }
         if (line.hasOption(OPTION_INPUT)) {
-            setXsdInput(line.getOptionValue(OPTION_INPUT).trim());
+            setCobolInput(line.getOptionValue(OPTION_INPUT).trim());
         }
         if (line.hasOption(OPTION_OUTPUT)) {
             setOutput(line.getOptionValue(OPTION_OUTPUT).trim());
@@ -226,7 +233,7 @@ public class Cob2AvroTransMain {
      */
     private void setDefaults() {
         if (cobolInput == null) {
-            setXsdInput(DEFAULT_INPUT_FOLDER_PATH);
+            setCobolInput(DEFAULT_INPUT_FOLDER_PATH);
         }
         if (output == null) {
             setOutput(DEFAULT_OUTPUT_FOLDER_PATH);
@@ -237,24 +244,24 @@ public class Cob2AvroTransMain {
     /**
      * Check the input parameter and keep it only if it is valid.
      * 
-     * @param xsdInputPath a file or folder name (relative or absolute)
+     * @param cobolInputPath a file or folder name (relative or absolute)
      */
-    public void setXsdInput(final String xsdInputPath) {
-        if (xsdInputPath == null) {
+    public void setCobolInput(final String cobolInputPath) {
+        if (cobolInputPath == null) {
             throw (new IllegalArgumentException(
                     "You must provide a source folder or file"));
         }
-        File xsdInput = new File(xsdInputPath);
-        if (xsdInput.exists()) {
-            if (xsdInput.isDirectory() && xsdInput.list().length == 0) {
-                throw new IllegalArgumentException("Folder '" + xsdInputPath
+        File cobolInput = new File(cobolInputPath);
+        if (cobolInput.exists()) {
+            if (cobolInput.isDirectory() && cobolInput.list().length == 0) {
+                throw new IllegalArgumentException("Folder '" + cobolInputPath
                         + "' is empty");
             }
         } else {
             throw new IllegalArgumentException("Input file or folder '"
-                    + xsdInputPath + "' not found");
+                    + cobolInputPath + "' not found");
         }
-        this.cobolInput = xsdInput;
+        this.cobolInput = cobolInput;
     }
 
     /**
