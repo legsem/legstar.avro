@@ -71,9 +71,8 @@ public class Cob2AvroTransMain {
         Cob2AvroTransMain main = new Cob2AvroTransMain();
         boolean success = main.execute(args);
         if (!success) {
-            throw new RuntimeException("Cob2AvroTransMain failure");         
+            throw new RuntimeException("Cob2AvroTransMain failure. Check previous messages.");         
         }
-        // System.exit(main.execute(args) ? 0 : 12);
     }
 
     /**
@@ -285,7 +284,7 @@ public class Cob2AvroTransMain {
     }
 
     /**
-     * @param classpath the optional configuration file path
+     * @param config the optional configuration file path
      */
     public void setConfigFile(final String config) {
         this.configFile = config == null ? null : new File(config);

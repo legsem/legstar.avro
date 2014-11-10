@@ -46,7 +46,7 @@ import com.legstar.coxb.util.NameUtil;
 /**
  * Unmarshal mainframe data to an avro generic record.
  * <p/>
- * @NotThreadSafe 
+ * This class in NOT thread safe. 
  */
 public class Cob2AvroUnmarshalVisitor extends CobolElementVisitor {
 

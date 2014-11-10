@@ -219,6 +219,26 @@
             </configuration>
         </plugin>
 
+        <!-- Site reporting -->
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-project-info-reports-plugin</artifactId>
+            <version>2.7</version>
+        </plugin>
+
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>2.10.1</version>
+            <configuration>
+              <links>
+                <link>http://www.legsem.com/legstar/legstar-core/legstar-coxbgen/apidocs/</link>
+                <link>http://www.legsem.com/legstar/legstar-core/legstar-coxbrt/apidocs/</link>
+                <link>http://www.legsem.com/legstar/legstar-core/legstar-coxbapi/apidocs/</link>
+              </links>
+            </configuration>
+        </plugin>
+
         <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
         <plugin>
           <groupId>org.eclipse.m2e</groupId>

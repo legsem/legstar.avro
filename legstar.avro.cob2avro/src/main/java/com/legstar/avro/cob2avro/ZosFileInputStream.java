@@ -12,7 +12,7 @@ public interface ZosFileInputStream {
      * Reads bytes from the underlying file.
      * 
      * @param b the buffer to be filled if possible. It should still contain
-     *        what was read last time
+     *            what was read last time
      * @return the number of bytes available to process (-1 if file exhausted)
      * @throws IOException if reading fails
      */
@@ -27,9 +27,9 @@ public interface ZosFileInputStream {
      * left).
      * 
      * @param b the buffer to be filled if possible. It should still contains
-     *        what was read last time
+     *            what was read last time
      * @param processed the number of bytes that were processed following the
-     *        previous read operation.
+     *            previous read operation.
      * @return the number of bytes available to process (-1 if file exhausted)
      * @throws IOException if reading fails
      */
@@ -41,10 +41,11 @@ public interface ZosFileInputStream {
      * @throws IOException if close fails
      */
     public void close() throws IOException;
-    
+
     /**
      * How many bytes of the original file were not read yet.
-     * @return
+     * 
+     * @return how many bytes of the original file were not read yet
      */
     long remaining();
 }

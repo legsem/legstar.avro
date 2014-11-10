@@ -24,8 +24,8 @@ public class CustomSpecificCompiler extends SpecificCompiler {
      * In the case of BigDecimals there is an internal java type (ByteBuffer)
      * and an external java type for getters/setters.
      * 
-     * @param schema
-     * @return
+     * @param schema the field schema
+     * @return the field java type
      */
     public String externalJavaType(Schema schema) {
         return isBigDecimal(schema) ? "java.math.BigDecimal" : super
