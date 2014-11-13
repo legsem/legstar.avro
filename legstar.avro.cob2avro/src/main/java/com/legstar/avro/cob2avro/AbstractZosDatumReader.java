@@ -95,7 +95,11 @@ public abstract class AbstractZosDatumReader<D> implements Iterator < D >,
             visitor.visit(cobolBinding);
             bytesProcessed += lastProcessed = visitor.getOffset();
             D specific = (D) SpecificData.get().deepCopy(schema, genericRecord);
-            log.debug("Avro record=" + specific.toString());
+
+            if (log.isDebugEnabled()) {
+                log.debug("Avro record=" + specific.toString());
+            }
+
             return specific;
         } catch (IOException e) {
             throw new AvroRuntimeException(e);
