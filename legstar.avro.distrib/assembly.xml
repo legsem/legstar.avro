@@ -1,0 +1,43 @@
+<!--
+Assembly descriptor for the distribution.
+-->
+<assembly>
+    <id>zip</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+    <includeBaseDirectory>true</includeBaseDirectory>
+
+    <fileSets>
+        <fileSet>
+            <directory>src/main/cobol</directory>
+            <outputDirectory>/samples/cobol</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/data</directory>
+            <outputDirectory>/samples/data</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/java</directory>
+            <outputDirectory>/samples/java</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/ant</directory>
+            <outputDirectory>/samples</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/conf</directory>
+            <outputDirectory>/samples/conf</outputDirectory>
+        </fileSet>
+    </fileSets>
+
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>lib</outputDirectory>
+            <scope>runtime</scope>
+            <excludes>
+              <exclude>com.legsem.legstar:legstar.avro.distrib</exclude>
+            </excludes>
+        </dependencySet>
+     </dependencySets>
+</assembly>

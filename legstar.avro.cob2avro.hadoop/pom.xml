@@ -98,7 +98,6 @@
        <!-- Filters the cob2avrotrans file for cob2avrotrans -->
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
-        <version>2.6</version>
         <executions>
           <execution>
             <id>copy-resources</id>
@@ -125,7 +124,6 @@
      <!-- Store maven classpath in a property for cob2trans -->
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.8</version>
         <executions>
           <execution>
             <phase>validate</phase>
@@ -143,7 +141,6 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>1.3.2</version>
         <executions>
           <execution>
             <id>cobol.translation</id>
@@ -169,7 +166,6 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>1.9</version>
         <executions>
           <execution>
              <phase>generate-sources</phase>
@@ -187,9 +183,7 @@
 
       <!-- Test framework -->
       <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.16</version>
           <configuration>
               <!--  Activate yourkit for tests
               <argLine>-agentlib:yjpagent</argLine> -->

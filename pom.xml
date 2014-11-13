@@ -98,6 +98,7 @@
       <module>legstar.avro.generator</module>
       <module>legstar.avro.cob2avro</module>
       <module>legstar.avro.cob2avro.hadoop</module>
+      <module>legstar.avro.distrib</module>
   </modules>
 
   <dependencyManagement>
@@ -151,6 +152,13 @@
       <dependency>
         <groupId>com.legsem.legstar</groupId>
         <artifactId>legstar.avro.cob2avro</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <!-- Avro LegStar Transformer for Hadoop -->
+      <dependency>
+        <groupId>com.legsem.legstar</groupId>
+        <artifactId>legstar.avro.cob2avro.hadoop</artifactId>
         <version>${project.version}</version>
       </dependency>
 
@@ -285,7 +293,56 @@
             </configuration>
         </plugin>
 
-        <!-- Release -->
+        <!-- Resource filtering -->
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-resources-plugin</artifactId>
+            <version>2.6</version>
+        </plugin>
+
+        <!-- Dependencies -->
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <version>2.8</version>
+        </plugin>
+
+        <!-- Execute Java -->
+        <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>1.3.2</version>
+        </plugin>
+
+          <!-- Add source folders (for generated code) -->
+        <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>1.9</version>
+        </plugin>
+
+        <!-- Assembly -->
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <version>2.5</version>
+        </plugin>
+
+         <!-- Make jars -->
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <version>2.5</version>
+        </plugin>
+
+        <!-- Test framework -->
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>2.16</version>
+        </plugin>
+
+       <!-- Release -->
         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-release-plugin</artifactId>

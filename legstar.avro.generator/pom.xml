@@ -79,9 +79,7 @@
   
           <!-- Make the jar executable (referencing a lib folder for dependencies) -->
           <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-jar-plugin</artifactId>
-              <version>2.5</version>
               <configuration>
                   <archive>
                       <manifest>

@@ -5,6 +5,7 @@
     <property name="gendir" location="gen"/>
     <property name="genjavadir" location="${gendir}/java"/>
     <property name="bindir" location="bin"/>
+    <property name="libdir" location="lib"/>
     <path id="project.class.path">
         <fileset dir="../lib">
             <include name="*.jar"/>
@@ -14,6 +15,7 @@
 
     <target name="init">
         <mkdir dir="${bindir}"/>
+        <mkdir dir="${libdir}"/>
     </target>
 
     <target name="generate" depends="init">
@@ -38,7 +40,11 @@
         </javac>
     </target>
 
-    <target name="run" depends="sampcompile">
+    <target name="sampjar" depends="sampcompile">
+        <jar destfile="${libdir}/legstar-avro-samples.jar" basedir="${bindir}"/>
+    </target>
+
+    <target name="run" depends="sampjar">
         <java classname="com.legstar.avro.cob2avro.samples.CustdatReader" fork="true" failonerror="true">
             <classpath>
                 <pathelement path="${classpath}"/>

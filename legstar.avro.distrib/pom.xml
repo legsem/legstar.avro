@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -7,88 +8,42 @@
     <version>0.2.1-SNAPSHOT</version>
   </parent>
 
-  <artifactId>legstar.avro.cob2avro</artifactId>
+  <artifactId>legstar.avro.distrib</artifactId>
   <packaging>jar</packaging>
 
-  <name>legstar.avro.cob2avro</name>
+  <name>legstar.avro.distrib</name>
 
   <dependencies>
 
-    <!-- LegStar -->
-    <dependency>
-      <groupId>com.legsem.legstar</groupId>
-      <artifactId>legstar-cob2trans</artifactId>
-    </dependency>
-
-    <!-- Apache avro -->
-    <dependency>
-      <groupId>org.apache.avro</groupId>
-      <artifactId>avro</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.avro</groupId>
-      <artifactId>avro-compiler</artifactId>
-    </dependency>
 
     <!-- Avro LegStar Generator -->
     <dependency>
       <groupId>com.legsem.legstar</groupId>
       <artifactId>legstar.avro.generator</artifactId>
     </dependency>
-
-    <!-- Apache utilities -->
+    <!-- Avro LegStar Transformer -->
     <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
+      <groupId>com.legsem.legstar</groupId>
+      <artifactId>legstar.avro.cob2avro</artifactId>
+    </dependency>
+    <!-- Avro LegStar Transformer for Hadoop-->
+    <dependency>
+      <groupId>com.legsem.legstar</groupId>
+      <artifactId>legstar.avro.cob2avro.hadoop</artifactId>
     </dependency>
 
     <!-- Tests -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <scope>test</scope>
     </dependency>
 
   </dependencies>
-
+  
   <build>
 
-    <!-- Used for alltypes.xsl -->
-    <testResources>
-        <testResource>
-            <directory>src/test/resources</directory>
-            <filtering>true</filtering>
-        </testResource>
-    </testResources>
-
     <plugins>
-
-      <!-- Filters the cob2avrotrans file for cob2avrotrans -->
-      <plugin>
-        <artifactId>maven-resources-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>copy-resources</id>
-            <phase>validate</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${basedir}/target/extra-resources</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>src/test/resources</directory>
-                  <filtering>true</filtering>
-                  <includes>
-                    <include>cob2avrotrans.properties</include>
-                  </includes>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
+      
       <!-- Store maven classpath in a property for cob2trans -->
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
@@ -118,7 +73,7 @@
             </goals>
             <configuration>
               <mainClass>com.legstar.avro.generator.Cob2AvroTransMain</mainClass>
-              <commandlineArgs>-i ${basedir}/src/test/cobol -o ${project.build.directory}/gen -c ${basedir}/target/extra-resources/cob2avrotrans.properties -cp ${maven.compile.classpath}</commandlineArgs>
+              <commandlineArgs>-i ${basedir}/src/main/cobol -o ${project.build.directory}/gen -c ${basedir}/src/main/resources/cob2avrotrans.properties -cp ${maven.compile.classpath}</commandlineArgs>
               <systemProperties>
                 <systemProperty>
                   <key>log4j.configuration</key>
@@ -149,18 +104,34 @@
         </executions>
       </plugin>
 
-      <!-- Test framework -->
       <plugin>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <configuration>
-              <!--  Activate yourkit for tests
-              <argLine>-agentlib:yjpagent</argLine> -->
-          </configuration>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <executions>
+              <execution>
+                  <id>make-assembly</id>
+                  <phase>package</phase>
+                  <goals>
+                      <goal>single</goal>
+                  </goals>
+                  <configuration>
+                      <appendAssemblyId>false</appendAssemblyId>
+                      <descriptors>
+                          <descriptor>assembly.xml</descriptor>
+                      </descriptors>
+                      <archiverConfig>
+                          <duplicateBehavior>skip</duplicateBehavior>
+                          <fileMode>0644</fileMode>
+                          <directoryMode>0755</directoryMode>
+                          <defaultDirectoryMode>0755</defaultDirectoryMode>
+                      </archiverConfig>
+                  </configuration>
+              </execution>
+           </executions>
       </plugin>
+
 
     </plugins>
 
   </build>
-
 
 </project>
