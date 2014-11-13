@@ -21,6 +21,10 @@
     <legstar.version>1.5.3</legstar.version>
     <legstar.core.version>1.5.10</legstar.core.version>
     <avro.version>1.7.7</avro.version>
+    <hadoop.version>2.4.1</hadoop.version>
+    <jaxb.version>2.2.2</jaxb.version>
+    <jackson.version>1.9.13</jackson.version>
+    <compiler.version>1.6</compiler.version>
     <timestamp>${maven.build.timestamp}</timestamp>
     <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
   </properties>
@@ -93,6 +97,7 @@
       <module>legstar.avro.translator</module>
       <module>legstar.avro.generator</module>
       <module>legstar.avro.cob2avro</module>
+      <module>legstar.avro.cob2avro.hadoop</module>
   </modules>
 
   <dependencyManagement>
@@ -122,6 +127,11 @@
         <artifactId>avro-compiler</artifactId>
         <version>${avro.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.apache.avro</groupId>
+        <artifactId>avro-mapred</artifactId>
+        <version>${avro.version}</version>
+      </dependency>
 
       <!-- Avro LegStar Translator -->
       <dependency>
@@ -137,16 +147,66 @@
         <version>${project.version}</version>
       </dependency>
 
+      <!-- Avro LegStar Transformer -->
+      <dependency>
+        <groupId>com.legsem.legstar</groupId>
+        <artifactId>legstar.avro.cob2avro</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <!-- Hadoop -->
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-common</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-hdfs</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-mapreduce-client-core</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-mapreduce-client-common</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+
+      <!-- Hadoop has hard dependency on JDK -->
+      <dependency>
+        <groupId>jdk.tools</groupId>
+        <artifactId>jdk.tools</artifactId>
+        <version>${compiler.version}</version>
+        <scope>system</scope>
+        <systemPath>${java.home}/../lib/tools.jar</systemPath>
+      </dependency>
+
+      <!-- Override these because hadoop uses jaxb-api  -->
+      <dependency>
+        <groupId>com.sun.xml.bind</groupId>
+        <artifactId>jaxb-xjc</artifactId>
+        <version>${jaxb.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.sun.xml.bind</groupId>
+        <artifactId>jaxb-impl</artifactId>
+        <version>${jaxb.version}</version>
+      </dependency>
+
       <!-- JSON -->
       <dependency>
           <groupId>org.codehaus.jackson</groupId>
           <artifactId>jackson-core-asl</artifactId>
-          <version>1.9.13</version>
+          <version>${jackson.version}</version>
       </dependency>
       <dependency>
           <groupId>org.codehaus.jackson</groupId>
           <artifactId>jackson-mapper-asl</artifactId>
-          <version>1.9.13</version>
+          <version>${jackson.version}</version>
       </dependency>
 
       <!-- XML schema -->
@@ -188,6 +248,22 @@
         <scope>test</scope>
       </dependency>
 
+      <!-- Hadoop Tests -->
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-common</artifactId>
+        <version>${hadoop.version}</version>
+        <scope>test</scope>
+        <type>test-jar</type>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-hdfs</artifactId>
+        <version>${hadoop.version}</version>
+        <scope>test</scope>
+        <type>test-jar</type>
+      </dependency>
+
     </dependencies>
 
   </dependencyManagement>
@@ -204,8 +280,8 @@
             <artifactId>maven-compiler-plugin</artifactId>
             <version>3.1</version>
             <configuration>
-                <source>1.6</source>
-                <target>1.6</target>
+                <source>${compiler.version}</source>
+                <target>${compiler.version}</target>
             </configuration>
         </plugin>
 
