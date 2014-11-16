@@ -2,9 +2,6 @@ package com.legstar.avro.cob2avro.samples;
 
 import java.io.IOException;
 
-import legstar.avro.test.beans.cusdat.bind.CustomerDataBinding;
-import legstar.avro.test.specific.cusdat.CustomerData;
-
 import org.apache.avro.mapred.AvroKey;
 import org.apache.avro.mapreduce.AvroJob;
 import org.apache.hadoop.conf.Configuration;
@@ -21,6 +18,9 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
+
+import com.legstar.avro.beans.custdat.bind.CustomerDataBinding;
+import com.legstar.avro.specific.custdat.CustomerData;
 
 import com.legstar.avro.cob2avro.hadoop.mapreduce.Cob2AvroJob;
 import com.legstar.avro.cob2avro.hadoop.mapreduce.ZosRdwAvroInputFormat;

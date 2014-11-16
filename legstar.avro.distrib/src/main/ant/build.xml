@@ -1,55 +1,50 @@
-<project basedir="." default="run">
+<project name="cob2avro-sample" default="run" basedir=".">
 
+    <!-- Generates and compiles samples                             -->
+    <!-- Runs the pure java sample                                  -->
+
+    <property name="libdir" location="../lib"/>
     <property name="cobdir" location="cobol"/>
     <property name="javadir" location="java"/>
     <property name="gendir" location="gen"/>
     <property name="genjavadir" location="${gendir}/java"/>
     <property name="bindir" location="bin"/>
-    <property name="libdir" location="lib"/>
+
+    <!-- Classpath for generation and compilation-->
     <path id="project.class.path">
-        <fileset dir="../lib">
+        <fileset dir="${libdir}">
             <include name="*.jar"/>
         </fileset>
-    </path>    
-    <property name="classpath" refid="project.class.path"/>
+    </path>
+    <property name="project.classpath" refid="project.class.path"/>
 
     <target name="init">
         <mkdir dir="${bindir}"/>
-        <mkdir dir="${libdir}"/>
     </target>
 
     <target name="generate" depends="init">
         <java classname="com.legstar.avro.generator.Cob2AvroTransMain" fork="true" failonerror="true">
-            <arg line="-i ${cobdir} -o ${gendir} -cp ${classpath}"/>
-            <classpath path="${classpath}"/>
+            <arg line="-i ${cobdir} -o ${gendir} -cp ${project.classpath}"/>
+            <classpath path="${project.classpath}"/>
         </java>
     </target>
 
-    <target name="gencompile" depends="generate">
-        <javac srcdir="${genjavadir}" destdir="${bindir}" source="1.6">
-            <classpath path="${classpath}"/>
-        </javac>
-    </target>
-
-    <target name="sampcompile" depends="gencompile">
-        <javac srcdir="${javadir}" destdir="${bindir}" source="1.6">
+    <target name="compile" depends="generate">
+        <javac srcdir="${genjavadir}:${javadir}" destdir="${bindir}" source="1.6" debug="true">
             <classpath>
-                <pathelement path="${classpath}"/>
+                <pathelement path="${project.classpath}"/>
                 <pathelement location="${bindir}"/>
             </classpath>
         </javac>
     </target>
 
-    <target name="sampjar" depends="sampcompile">
-        <jar destfile="${libdir}/legstar-avro-samples.jar" basedir="${bindir}"/>
-    </target>
-
-    <target name="run" depends="sampjar">
+    <target name="run" depends="compile">
         <java classname="com.legstar.avro.cob2avro.samples.CustdatReader" fork="true" failonerror="true">
             <classpath>
-                <pathelement path="${classpath}"/>
+                <pathelement path="${project.classpath}"/>
                 <pathelement location="${bindir}"/>
             </classpath>
         </java>
     </target>
+
 </project>

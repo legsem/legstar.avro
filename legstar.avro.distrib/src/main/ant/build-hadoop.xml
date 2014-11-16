@@ -1,55 +1,90 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project name="cob2avro-hadoop-sample" default="launch-local" basedir=".">
+<project name="cob2avro-hadoop-sample" default="launch" basedir=".">
 
+    <!-- Generates and compiles samples                             -->
     <!-- Runs a mapreduce job on hadoop local                       -->
-    <!-- Make sure you run the regular build.xml before this script -->
 
-    <property environment="env"/>
-    <property name="samplesJar" location="${basedir}/lib/legstar-avro-samples.jar"/>
+    <property name="libdir" location="../lib"/>
+    <property name="cobdir" location="cobol"/>
+    <property name="javadir" location="java"/>
+    <property name="gendir" location="gen"/>
+    <property name="genjavadir" location="${gendir}/java"/>
+    <property name="confdir" location="conf"/>
+    <property name="bindir" location="bin"/>
+
+    <property name="inFile" location="data/ZOS.FCUSTDAT.RDW.bin" />
+    <property name="outdir" location="out"/>
+
     <property name="hadoopSampleClassName" value="com.legstar.avro.cob2avro.samples.CustdatHadoopReader"/>
-    <property name="confdir" location="${basedir}/conf"/>
+
+    <!-- Classpath for generation and compilation-->
     <path id="project.class.path">
-        <fileset dir="../lib">
+        <fileset dir="${libdir}">
             <include name="*.jar"/>
         </fileset>
-    </path>    
-    <property name="classpath" refid="project.class.path"/>
-    <property name="INPUT_FILE" value="${basedir}/data/ZOS.FCUSTDAT.RDW.bin" />
-    <property name="OUTPUT_DIR" value="${java.io.tmpdir}/OUTPUT" />
-    
-    <target name="launch-local">
-  
-    	<pathconvert targetos="unix" property="classpath.unix" refid="project.class.path"/>
-      <pathconvert targetos="windows" property="classpath.windows" refid="project.class.path"/>
-  
-      <exec executable="${env.HADOOP_HOME}/bin/hadoop" osfamily="unix" failonerror="true">
+    </path>
+    <property name="project.classpath" refid="project.class.path"/>
+
+    <!-- Classpath for mapred execution-->
+    <path id="runtime.class.path">
+        <fileset dir="${libdir}">
+            <include name="legstar*.jar"/>
+            <include name="avro-mapred*.jar"/>
+        </fileset>
+        <pathelement location="${bindir}"/>
+    </path>
+
+    <target name="init">
+        <mkdir dir="${bindir}"/>
+    </target>
+
+    <target name="generate" depends="init">
+        <java classname="com.legstar.avro.generator.Cob2AvroTransMain" fork="true" failonerror="true">
+            <arg line="-i ${cobdir} -o ${gendir} -cp ${project.classpath}"/>
+            <classpath path="${project.classpath}"/>
+        </java>
+    </target>
+
+    <target name="compile" depends="generate">
+        <javac srcdir="${genjavadir}:${javadir}" destdir="${bindir}" source="1.6" debug="true">
+            <classpath>
+                <pathelement path="${project.classpath}"/>
+                <pathelement location="${bindir}"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="launch" depends="compile">
+
+      <pathconvert targetos="unix" property="classpath.unix" refid="runtime.class.path"/>
+      <pathconvert targetos="windows" property="classpath.windows" refid="runtime.class.path"/>
+
+      <exec executable="hadoop" osfamily="unix" failonerror="true">
         <env key="HADOOP_CLASSPATH" path="${classpath.unix}"/>
         <arg value="--config" />
-        <arg value="${confdir}/hadoop-local" />
-        <arg value="jar" />
-        <arg value="${samplesJar}" />
+        <arg value="${confdir}/hadoop-local-unix" />
         <arg value="${hadoopSampleClassName}" />
-        <arg value="file://${INPUT_FILE}" />
-        <arg value="file://${OUTPUT_DIR}" />
+        <arg value="file://${inFile}" />
+        <arg value="file://${outdir}" />
       </exec>
 
-    	<exec executable="${env.HADOOP_HOME}/bin/hadoop.cmd" osfamily="windows" failonerror="true">
+      <exec executable="cmd" osfamily="windows" failonerror="true">
         <env key="HADOOP_CLASSPATH" path="${classpath.windows}"/>
+        <arg value="/c"/>
+        <arg value="hadoop.cmd"/>
         <arg value="--config" />
-        <arg value="${confdir}/hadoop-local" />
-        <arg value="jar" />
-        <arg value="${samplesJar}" />
+        <arg value="${confdir}/hadoop-local-windows" />
         <arg value="${hadoopSampleClassName}" />
-        <arg value="file://${INPUT_FILE}" />
-        <arg value="file://${OUTPUT_DIR}" />
+        <arg value="file:///${inFile}" />
+        <arg value="file:///${outdir}" />
       </exec>
-  
-    </target>
-  
-    <target name="clean" description="Clean output directory">
-        <delete dir="${OUTPUT_DIR}" verbose="true" />
+
     </target>
 
-    <target name="clean-and-launch" depends="clean,launch-local" />
+    <target name="clean" description="Clean output directory">
+        <delete dir="${outdir}" verbose="true" />
+        <delete dir="${bindir}"  verbose="false"/>
+    </target>
+
+    <target name="clean-and-launch" depends="clean,launch" />
 
 </project>
