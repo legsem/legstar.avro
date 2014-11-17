@@ -9,7 +9,7 @@ legstar.avro
 
 ## Objectives
 
-![Overview](legsem.github.com/repository/images/legstar.avro.overview.png)
+![Overview](http://legsem.github.io/images/legstar.avro.overview.png)
 
 * Provide a Translator from a [COBOL copybook](http://en.wikipedia.org/wiki/COBOL#Data_division) to an equivalent Apache [Avro Schema](http://avro.apache.org/docs/current/#schemas).
 
