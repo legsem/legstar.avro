@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.legsem.legstar</groupId>
     <artifactId>legstar.avro</artifactId>
-    <version>0.2.1-SNAPSHOT</version>
+    <version>0.3.0</version>
   </parent>
 
   <artifactId>legstar.avro.translator</artifactId>
