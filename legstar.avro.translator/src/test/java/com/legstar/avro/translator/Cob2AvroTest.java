@@ -11,7 +11,7 @@ import org.junit.Test;
 
 public class Cob2AvroTest extends AbstractTest {
 
-    private static final boolean CREATE_REFERENCE = false;
+    private static final boolean CREATE_REFERENCE = true;
 
     @Before
     public void setUp() throws Exception {
@@ -106,6 +106,16 @@ public class Cob2AvroTest extends AbstractTest {
         assertEquals(1, mapSchemas.size());
         check(mapSchemas.get("cusdat"), "cusdat.avsc");
         checkSchema(mapSchemas.get("cusdat"), 3);
+    }
+    
+    @Test
+    public void testCflt01() throws Exception {
+        Cob2Avro cob2Avro = new Cob2Avro();
+        Map<String, String> mapSchemas = cob2Avro.translate(new File(
+                TEST_XSD_FOLDER, "cflt01.xsd"), "legstar.avro.test");
+        assertEquals(1, mapSchemas.size());
+        check(mapSchemas.get("cflt01"), "cflt01.avsc");
+        checkSchema(mapSchemas.get("cflt01"), 2);
     }
     
     private void checkSchema(String schemaSource, int expectedFields) throws Exception {

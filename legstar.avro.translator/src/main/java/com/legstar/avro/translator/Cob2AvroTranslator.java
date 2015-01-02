@@ -99,12 +99,11 @@ public class Cob2AvroTranslator {
             XmlSchemaElement xsdElement = (XmlSchemaElement) items.values()
                     .iterator().next();
             if (xsdElement.getSchemaType() instanceof XmlSchemaComplexType) {
-                visit(xmlSchema,
-                        (XmlSchemaComplexType) xsdElement.getSchemaType(), 1,
-                        avroFields);
-                rootAvroSchema = buildAvroRecordType(
-                        getAvroTypeName(xsdElement), avroFields,
-                        xsdElement.getMaxOccurs() > 1);
+                XmlSchemaComplexType xsdType = (XmlSchemaComplexType) xsdElement
+                        .getSchemaType();
+                visit(xmlSchema, xsdType, 1, avroFields);
+                rootAvroSchema = buildAvroRecordType(getAvroTypeName(xsdType),
+                        avroFields, xsdElement.getMaxOccurs() > 1);
             } else {
                 throw new Cob2AvroException(
                         "XML schema does contain a root element but it is not a complex type");
@@ -163,12 +162,14 @@ public class Cob2AvroTranslator {
         log.debug("process started for element = " + xsdElement.getName());
 
         if (xsdElement.getSchemaType() instanceof XmlSchemaComplexType) {
+            XmlSchemaComplexType xsdType = (XmlSchemaComplexType) xsdElement
+                    .getSchemaType();
+
             int nextLevel = level + 1;
             final ArrayNode avroChildrenFields = MAPPER.createArrayNode();
-            visit(xmlSchema, (XmlSchemaComplexType) xsdElement.getSchemaType(),
-                    nextLevel, avroChildrenFields);
+            visit(xmlSchema, xsdType, nextLevel, avroChildrenFields);
             ObjectNode avroRecordType = buildAvroRecordType(
-                    getAvroTypeName(xsdElement), avroChildrenFields,
+                    getAvroTypeName(xsdType), avroChildrenFields,
                     xsdElement.getMaxOccurs() > 1);
             ObjectNode avroRecordElement = MAPPER.createObjectNode();
             avroRecordElement.put("type", avroRecordType);
@@ -465,12 +466,14 @@ public class Cob2AvroTranslator {
 
     /**
      * Get a name for a record type.
+     * <p/>
+     * TODO XML schema names might not be valid Avro type names
      * 
-     * @param xsdElement the COBOL-annotated XML schema element name.
-     * @return a field name
+     * @param xsdType the XML schema complex type.
+     * @return an avro type name
      */
-    public String getAvroTypeName(final XmlSchemaElement xsdElement) {
-        return StringUtils.capitalize(xsdElement.getName());
+    public String getAvroTypeName(final XmlSchemaComplexType xsdType) {
+        return xsdType.getName();
     }
 
 }
