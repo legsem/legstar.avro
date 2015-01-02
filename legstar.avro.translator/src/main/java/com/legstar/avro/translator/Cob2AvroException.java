@@ -1,8 +1,11 @@
 package com.legstar.avro.translator;
 
-import java.io.IOException;
 
-public class Cob2AvroException extends IOException {
+/**
+ * Failed to translate XML schema to Avro Schema.
+ *
+ */
+public class Cob2AvroException extends RuntimeException {
 
 	private static final long serialVersionUID = -9123916734116875812L;
 
