@@ -1,12 +1,20 @@
 package com.legstar.avro.translator;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.xml.namespace.QName;
 import javax.xml.transform.stream.StreamSource;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.ws.commons.schema.XmlSchema;
 import org.apache.ws.commons.schema.XmlSchemaAll;
@@ -41,16 +49,75 @@ import org.slf4j.LoggerFactory;
  * Translates a COBOL-annotated XML schema to an Avro Schema.
  * 
  */
-public class Cob2AvroTranslator {
+public class Xsd2AvroTranslator {
+
+    private static final String LEGSTAR_XSD_FILE_ENCODING = "UTF-8";
 
     /** Logging. */
     private static Logger log = LoggerFactory
-            .getLogger(Cob2AvroTranslator.class);
+            .getLogger(Xsd2AvroTranslator.class);
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /** Used to tag columns which belong to choices (REDEFINES). */
     public static final String CHOICE_PREFIX_FORMAT = "[choice:%s_%s]";
+
+    /**
+     * Translate a legstar generated xsd file (with COBOL annotations) to an
+     * avro schema.
+     * <p/>
+     * If a folder is passed rather than a single file then all xsd files from
+     * that folder are translated.
+     * 
+     * @param xsdInput a single xsd file or a folder containing xsd files
+     * @param avroNamespacePrefix for avro schema (package name for generated
+     *            objects)
+     * @return for each xsd file translated, the avro schema serialized as
+     *         string
+     * @throws IOException if translation fails
+     */
+    public Map < String, String > translate(File xsdInput,
+            String avroNamespacePrefix) throws IOException {
+
+        log.info("COBOL to Avro translator started");
+        Map < String, String > mapSchemas = new HashMap < String, String >();
+
+        if (!xsdInput.exists()) {
+            throw new IOException("Specified input '" + xsdInput.getName()
+                    + "' does not exist");
+        }
+
+        log.info("Reading legstar xsd files from " + xsdInput.getName());
+
+        if (xsdInput.isDirectory()) {
+            Collection < File > xsdFiles = FileUtils.listFiles(xsdInput,
+                    new String[] { "xsd" }, true);
+            for (File xsdFile : xsdFiles) {
+                translate(xsdFile, mapSchemas, avroNamespacePrefix);
+            }
+        } else {
+            translate(xsdInput, mapSchemas, avroNamespacePrefix);
+        }
+
+        log.info("COBOL to Avro translator ended");
+        return mapSchemas;
+    }
+
+    private void translate(File xsdFile, Map < String, String > mapSchemas,
+            String avroNamespacePrefix) throws IOException {
+
+        String xsdFileName = FilenameUtils.getBaseName(xsdFile.getName());
+        String avroNamespace = (avroNamespacePrefix == null ? ""
+                : (avroNamespacePrefix + ".")) + xsdFileName.toLowerCase();
+
+        String avroSchema = translate(new InputStreamReader(
+                new FileInputStream(xsdFile), LEGSTAR_XSD_FILE_ENCODING),
+                avroNamespace, xsdFileName);
+        mapSchemas.put(xsdFileName, avroSchema);
+
+        log.info("LegStar xsd {} translated to schema {}", xsdFileName,
+                avroSchema);
+    }
 
     /**
      * Translate the input XML Schema (via Reader).
@@ -59,10 +126,10 @@ public class Cob2AvroTranslator {
      * @param avroNamespace the target Avro namespace
      * @param avroSchemaName the target Avro schema name
      * @return the Avro schema as a JSON string
-     * @throws Cob2AvroException if translation fails
+     * @throws Xsd2AvroTranslatorException if translation fails
      */
     public String translate(Reader reader, String avroNamespace,
-            String avroSchemaName) throws Cob2AvroException {
+            String avroSchemaName) throws Xsd2AvroTranslatorException {
 
         XmlSchemaCollection schemaCol = new XmlSchemaCollection();
         XmlSchema xsd = schemaCol.read(new StreamSource(reader));
@@ -76,10 +143,10 @@ public class Cob2AvroTranslator {
      * @param avroNamespace the target Avro namespace
      * @param avroSchemaName the target Avro schema name
      * @return the Avro schema as a JSON string
-     * @throws Cob2AvroException if translation fails
+     * @throws Xsd2AvroTranslatorException if translation fails
      */
     public String translate(XmlSchema xmlSchema, String avroNamespace,
-            String avroSchemaName) throws Cob2AvroException {
+            String avroSchemaName) throws Xsd2AvroTranslatorException {
 
         log.debug("XML Schema to Avro Schema translator started");
 
@@ -105,12 +172,12 @@ public class Cob2AvroTranslator {
                 rootAvroSchema = buildAvroRecordType(getAvroTypeName(xsdType),
                         avroFields, xsdElement.getMaxOccurs() > 1);
             } else {
-                throw new Cob2AvroException(
+                throw new Xsd2AvroTranslatorException(
                         "XML schema does contain a root element but it is not a complex type");
             }
 
         } else {
-            throw new Cob2AvroException(
+            throw new Xsd2AvroTranslatorException(
                     "XML schema does not contain a root element");
         }
         rootAvroSchema.put("namespace", avroNamespace == null ? ""
@@ -123,7 +190,7 @@ public class Cob2AvroTranslator {
 
     private ObjectNode buildAvroRecordType(String avroRecordTypeName,
             final ArrayNode avroFields, boolean isArray)
-            throws Cob2AvroException {
+            throws Xsd2AvroTranslatorException {
 
         ObjectNode avroRecord = MAPPER.createObjectNode();
         avroRecord.put("type", "record");
@@ -146,11 +213,11 @@ public class Cob2AvroTranslator {
      * @param xsdElement the XML Schema element to process
      * @param level the current level in the elements hierarchy.
      * @param avroFields array of fields being populated
-     * @throws Cob2AvroException if processing fails
+     * @throws Xsd2AvroTranslatorException if processing fails
      */
     private void visit(XmlSchema xmlSchema, final XmlSchemaElement xsdElement,
             final int level, final ArrayNode avroFields)
-            throws Cob2AvroException {
+            throws Xsd2AvroTranslatorException {
 
         /*
          * If this element is referencing another, it might not be useful to
@@ -191,7 +258,7 @@ public class Cob2AvroTranslator {
      * @param xsdType the XML schema complex type
      * @param level the depth in the hierarchy
      * @param avroFields array of avro fields being populated
-     * @throws Cob2AvroException if something abnormal in the xsd
+     * @throws Xsd2AvroTranslatorException if something abnormal in the xsd
      */
     private void visit(XmlSchema xmlSchema, XmlSchemaComplexType xsdType,
             final int level, final ArrayNode avroFields) {
@@ -208,11 +275,11 @@ public class Cob2AvroTranslator {
      * @param avroFieldName to use as the field name for this avro field
      * @param maxOccurs dimension for arrays
      * @param avroFields array of avro fields being populated
-     * @throws Cob2AvroException if something abnormal in the xsd
+     * @throws Xsd2AvroTranslatorException if something abnormal in the xsd
      */
     private void visit(XmlSchemaSimpleType xsdType, final int level,
             final String avroFieldName, long maxOccurs, ArrayNode avroFields)
-            throws Cob2AvroException {
+            throws Xsd2AvroTranslatorException {
 
         Object avroType = getAvroPrimitiveType(avroFieldName, xsdType,
                 maxOccurs > 1);
@@ -298,11 +365,11 @@ public class Cob2AvroTranslator {
      * @param xsdChoice the choice element
      * @param level the current level in the elements hierarchy.
      * @param avroFields array of fields being populated
-     * @throws Cob2AvroException
+     * @throws Xsd2AvroTranslatorException
      */
     private void visit(final XmlSchema xmlSchema, XmlSchemaChoice xsdChoice,
             final int level, final ArrayNode avroFields)
-            throws Cob2AvroException {
+            throws Xsd2AvroTranslatorException {
 
         log.debug("process started for choice");
 
@@ -348,11 +415,11 @@ public class Cob2AvroTranslator {
      * @param isArray if this is an array of simple types
      * @return a String or JSON object representing the schema of the simple
      *         type
-     * @throws Cob2AvroException if something abnormal in the xsd
+     * @throws Xsd2AvroTranslatorException if something abnormal in the xsd
      */
     private Object getAvroPrimitiveType(final String avroFieldName,
             final XmlSchemaSimpleType xsdType, boolean isArray)
-            throws Cob2AvroException {
+            throws Xsd2AvroTranslatorException {
         XmlSchemaSimpleTypeRestriction restriction = (XmlSchemaSimpleTypeRestriction) xsdType
                 .getContent();
         if (restriction != null && restriction.getBaseTypeName() != null) {
@@ -364,7 +431,7 @@ public class Cob2AvroTranslator {
             }
             if ("fixed".equals(avroPrimitiveType)) {
                 if (restriction.getFacets() == null) {
-                    throw new Cob2AvroException(
+                    throw new Xsd2AvroTranslatorException(
                             "Binary type without facets in " + avroFieldName);
                 }
                 avroType = MAPPER.createObjectNode();
@@ -379,7 +446,7 @@ public class Cob2AvroTranslator {
                 }
             } else if ("decimal".equals(avroPrimitiveType)) {
                 if (restriction.getFacets() == null) {
-                    throw new Cob2AvroException(
+                    throw new Xsd2AvroTranslatorException(
                             "Decimal type without facets in " + avroFieldName);
                 }
                 avroType = MAPPER.createObjectNode();

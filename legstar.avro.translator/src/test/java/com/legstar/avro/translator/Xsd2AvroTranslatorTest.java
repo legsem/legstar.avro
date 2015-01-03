@@ -9,7 +9,7 @@ import org.apache.avro.Schema;
 import org.junit.Before;
 import org.junit.Test;
 
-public class Cob2AvroTest extends AbstractTest {
+public class Xsd2AvroTranslatorTest extends AbstractTest {
 
     private static final boolean CREATE_REFERENCE = true;
 
@@ -20,7 +20,7 @@ public class Cob2AvroTest extends AbstractTest {
 
     @Test
 	public void testFlat01() throws Exception {
-		Cob2Avro cob2Avro = new Cob2Avro();
+		Xsd2AvroTranslator cob2Avro = new Xsd2AvroTranslator();
 		Map<String, String> mapSchemas = cob2Avro.translate(new File(
 				TEST_XSD_FOLDER, "flat01.xsd"), "legstar.avro.test");
 		assertEquals(1, mapSchemas.size());
@@ -30,7 +30,7 @@ public class Cob2AvroTest extends AbstractTest {
 
     @Test
 	public void testFlat02() throws Exception {
-		Cob2Avro cob2Avro = new Cob2Avro();
+		Xsd2AvroTranslator cob2Avro = new Xsd2AvroTranslator();
 		Map<String, String> mapSchemas = cob2Avro.translate(new File(
 				TEST_XSD_FOLDER, "flat02.xsd"), "legstar.avro.test");
 		assertEquals(1, mapSchemas.size());
@@ -40,7 +40,7 @@ public class Cob2AvroTest extends AbstractTest {
 
     @Test
 	public void testStru03() throws Exception {
-		Cob2Avro cob2Avro = new Cob2Avro();
+		Xsd2AvroTranslator cob2Avro = new Xsd2AvroTranslator();
 		Map<String, String> mapSchemas = cob2Avro.translate(new File(
 				TEST_XSD_FOLDER, "stru03.xsd"), "legstar.avro.test");
 		assertEquals(1, mapSchemas.size());
@@ -50,7 +50,7 @@ public class Cob2AvroTest extends AbstractTest {
 
     @Test
 	public void testStru04() throws Exception {
-		Cob2Avro cob2Avro = new Cob2Avro();
+		Xsd2AvroTranslator cob2Avro = new Xsd2AvroTranslator();
 		Map<String, String> mapSchemas = cob2Avro.translate(new File(
 				TEST_XSD_FOLDER, "stru04.xsd"), "legstar.avro.test");
 		assertEquals(1, mapSchemas.size());
@@ -60,7 +60,7 @@ public class Cob2AvroTest extends AbstractTest {
 
     @Test
     public void testStru05() throws Exception {
-        Cob2Avro cob2Avro = new Cob2Avro();
+        Xsd2AvroTranslator cob2Avro = new Xsd2AvroTranslator();
         Map<String, String> mapSchemas = cob2Avro.translate(new File(
                 TEST_XSD_FOLDER, "stru05.xsd"), "legstar.avro.test");
         assertEquals(1, mapSchemas.size());
@@ -70,7 +70,7 @@ public class Cob2AvroTest extends AbstractTest {
 
     @Test
 	public void testAlltypes() throws Exception {
-		Cob2Avro cob2Avro = new Cob2Avro();
+		Xsd2AvroTranslator cob2Avro = new Xsd2AvroTranslator();
 		Map<String, String> mapSchemas = cob2Avro.translate(new File(
 				TEST_XSD_FOLDER, "alltypes.xsd"), "legstar.avro.test");
 		assertEquals(1, mapSchemas.size());
@@ -80,7 +80,7 @@ public class Cob2AvroTest extends AbstractTest {
 
     @Test
     public void testRdef01() throws Exception {
-        Cob2Avro cob2Avro = new Cob2Avro();
+        Xsd2AvroTranslator cob2Avro = new Xsd2AvroTranslator();
         Map<String, String> mapSchemas = cob2Avro.translate(new File(
                 TEST_XSD_FOLDER, "rdef01.xsd"), "legstar.avro.test");
         assertEquals(1, mapSchemas.size());
@@ -90,7 +90,7 @@ public class Cob2AvroTest extends AbstractTest {
     
     @Test
     public void testRdef02() throws Exception {
-        Cob2Avro cob2Avro = new Cob2Avro();
+        Xsd2AvroTranslator cob2Avro = new Xsd2AvroTranslator();
         Map<String, String> mapSchemas = cob2Avro.translate(new File(
                 TEST_XSD_FOLDER, "rdef02.xsd"), "legstar.avro.test");
         assertEquals(1, mapSchemas.size());
@@ -100,7 +100,7 @@ public class Cob2AvroTest extends AbstractTest {
     
     @Test
     public void testCusdat() throws Exception {
-        Cob2Avro cob2Avro = new Cob2Avro();
+        Xsd2AvroTranslator cob2Avro = new Xsd2AvroTranslator();
         Map<String, String> mapSchemas = cob2Avro.translate(new File(
                 TEST_XSD_FOLDER, "cusdat.xsd"), "legstar.avro.test");
         assertEquals(1, mapSchemas.size());
@@ -110,7 +110,7 @@ public class Cob2AvroTest extends AbstractTest {
     
     @Test
     public void testCflt01() throws Exception {
-        Cob2Avro cob2Avro = new Cob2Avro();
+        Xsd2AvroTranslator cob2Avro = new Xsd2AvroTranslator();
         Map<String, String> mapSchemas = cob2Avro.translate(new File(
                 TEST_XSD_FOLDER, "cflt01.xsd"), "legstar.avro.test");
         assertEquals(1, mapSchemas.size());

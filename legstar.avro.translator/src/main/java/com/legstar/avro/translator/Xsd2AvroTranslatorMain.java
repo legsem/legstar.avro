@@ -3,7 +3,9 @@ package com.legstar.avro.translator;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Map.Entry;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -11,6 +13,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.PosixParser;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +21,7 @@ import org.slf4j.LoggerFactory;
  * Exposes the Translator utility as a command line tool.
  * 
  */
-public class Cob2AvroMain {
+public class Xsd2AvroTranslatorMain {
 
     /** Options that can be setup. */
     private static final String OPTION_AVRO_NAMESPACE_PREFIX = "namespace";
@@ -31,7 +34,7 @@ public class Cob2AvroMain {
 
     private static final String OPTION_VERSION = "version";
 
-    private static Logger log = LoggerFactory.getLogger(Cob2AvroMain.class);
+    private static Logger log = LoggerFactory.getLogger(Xsd2AvroTranslatorMain.class);
 
     /** The defaults. */
     private static final String DEFAULT_INPUT_FOLDER_PATH = "xsd";
@@ -61,7 +64,7 @@ public class Cob2AvroMain {
      * @param args translator options. Provides help if no arguments passed.
      */
     public static void main(final String[] args) {
-        Cob2AvroMain main = new Cob2AvroMain();
+        Xsd2AvroTranslatorMain main = new Xsd2AvroTranslatorMain();
         main.execute(args);
     }
 
@@ -78,13 +81,32 @@ public class Cob2AvroMain {
             Options options = createOptions();
             if (collectOptions(options, args)) {
                 setDefaults();
-                Cob2AvroGenerator gen = new Cob2AvroGenerator();
-                gen.generate(xsdInput, output, avroNamespacePrefix);
+                generate();
             }
         } catch (Exception e) {
             log.error("COBOL to Avro translation failure", e);
             throw new RuntimeException(e);
         }
+    }
+    
+    private void generate() {
+        try {
+            FileUtils.forceMkdir(output);
+
+            Xsd2AvroTranslator translator = new Xsd2AvroTranslator();
+            Map<String, String> mapSchemas = translator.translate(xsdInput,
+                    avroNamespacePrefix);
+            for (Entry<String, String> entry : mapSchemas.entrySet()) {
+
+                // Write shema file
+                FileUtils.writeStringToFile(new File(output, entry.getKey()
+                        + ".avsc"), entry.getValue());
+            }
+
+        } catch (IOException e) {
+            log.error("Generation failed for input " + xsdInput.getName(), e);
+        }
+
     }
 
     /**
