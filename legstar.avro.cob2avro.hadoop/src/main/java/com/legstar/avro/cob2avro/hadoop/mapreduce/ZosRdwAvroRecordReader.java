@@ -15,26 +15,39 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 
 import com.legstar.avro.cob2avro.ZosVarRdwDatumReader;
-import com.legstar.avro.cob2avro.ZosRecordMatcher;
-import com.legstar.coxb.ICobolComplexBinding;
+import com.legstar.base.context.CobolContext;
+import com.legstar.base.finder.CobolTypeFinder;
+import com.legstar.base.type.composite.CobolComplexType;
+import com.legstar.base.visitor.FromCobolChoiceStrategy;
 
 /**
- * A Hadoop RecordReader for a mainframe file with records prefixed by a Record Descriptor Word (RDW).
+ * A Hadoop RecordReader for a mainframe file with records prefixed by a Record
+ * Descriptor Word (RDW).
  * <p/>
  * Mainframe records are returned as Avro keys.
- *
+ * 
  * @param <T>
  */
-public class ZosRdwAvroRecordReader<T> extends RecordReader < AvroKey < T >, NullWritable > {
+public class ZosRdwAvroRecordReader<T> extends
+        RecordReader < AvroKey < T >, NullWritable > {
 
-    /** The reader schema for the records within the input Avro container file. */
-    private final Schema readerSchema;
+    /** The mainframe COBOL parameters (including code page) */
+    private final CobolContext cobolContext;
 
-    /** The legstar binding for the mainframe record */
-    private final ICobolComplexBinding cobolBinding;
+    /** The mainframe record type */
+    private final CobolComplexType cobolType;
 
     /** Provides the capability to match the start of a new record */
-    private final ZosRecordMatcher recordMatcher;
+    private final CobolTypeFinder recordMatcher;
+
+    /**
+     * Custom redefines alternative selector. Only needed when the incoming
+     * record has redefines and the default strategy is not good enough.
+     */
+    private final FromCobolChoiceStrategy customChoiceStrategy;
+
+    /** The Avro schema for records converted off the input mainframe file. */
+    private final Schema schema;
 
     /** The current record from the Avro container file being read. */
     private T currentRecord;
@@ -52,17 +65,22 @@ public class ZosRdwAvroRecordReader<T> extends RecordReader < AvroKey < T >, Nul
     /**
      * Constructor.
      * 
-     * @param readerSchema The reader schema for the records of the Avro
-     *            container file.
-     * @param cobolBinding A reusable cobol binding for the mainframe file
-     *            record
+     * @param cobolContext mainframe COBOL parameters
+     * @param cobolType mainframe record type
+     * @param customChoiceStrategy custom redefines alternative selector
      * @param recordMatcher provides the capability to match the start of a new
      *            record
+     * @param schema Avro schema for records converted off the input mainframe
+     *            file
      */
-    protected ZosRdwAvroRecordReader(Schema readerSchema,
-            ICobolComplexBinding cobolBinding, ZosRecordMatcher recordMatcher) {
-        this.readerSchema = readerSchema;
-        this.cobolBinding = cobolBinding;
+    protected ZosRdwAvroRecordReader(CobolContext cobolContext,
+            CobolComplexType cobolType,
+            FromCobolChoiceStrategy customChoiceStrategy,
+            CobolTypeFinder recordMatcher, Schema schema) {
+        this.cobolContext = cobolContext;
+        this.cobolType = cobolType;
+        this.customChoiceStrategy = customChoiceStrategy;
+        this.schema = schema;
         this.recordMatcher = recordMatcher;
         this.currentRecord = null;
     }
@@ -91,7 +109,7 @@ public class ZosRdwAvroRecordReader<T> extends RecordReader < AvroKey < T >, Nul
         long readLen = fs.getFileStatus(fileSplit.getPath()).getLen()
                 - (start > 0 ? start - 1 : 0);
         datumReader = new ZosVarRdwDatumReader < T >(filein, readLen,
-                readerSchema, cobolBinding);
+                cobolContext, cobolType, customChoiceStrategy, schema);
 
         if (start > 0) {
             // This is a subsequent split
@@ -118,11 +136,13 @@ public class ZosRdwAvroRecordReader<T> extends RecordReader < AvroKey < T >, Nul
         }
     }
 
-    public AvroKey < T > getCurrentKey() throws IOException, InterruptedException {
+    public AvroKey < T > getCurrentKey() throws IOException,
+            InterruptedException {
         return new AvroKey < T >(currentRecord);
     }
 
-    public NullWritable getCurrentValue() throws IOException, InterruptedException {
+    public NullWritable getCurrentValue() throws IOException,
+            InterruptedException {
         return NullWritable.get();
     }
 

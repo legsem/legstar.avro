@@ -1,0 +1,11 @@
+{
+  "optlStructInd" : 1,
+  "optlItemInd" : 0,
+  "optlStruct" : {
+    "legstar.test.avro.optl01.OptlStruct" : {
+      "optlStructField1" : "123456789012345678",
+      "optlStructField2" : "ABCDE"
+    }
+  },
+  "optlItem" : null
+}

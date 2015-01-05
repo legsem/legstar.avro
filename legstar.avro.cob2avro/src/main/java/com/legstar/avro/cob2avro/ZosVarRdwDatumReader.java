@@ -6,7 +6,10 @@ import java.nio.ByteBuffer;
 
 import org.apache.avro.Schema;
 
-import com.legstar.coxb.ICobolComplexBinding;
+import com.legstar.base.context.CobolContext;
+import com.legstar.base.context.EbcdicCobolContext;
+import com.legstar.base.type.composite.CobolComplexType;
+import com.legstar.base.visitor.FromCobolChoiceStrategy;
 
 /**
  * Reads a mainframe byte stream where records are variable size and start with
@@ -24,9 +27,22 @@ public class ZosVarRdwDatumReader<D> extends AbstractZosDatumReader < D > {
     public static final int RDW_LEN = 4;
 
     public ZosVarRdwDatumReader(InputStream inStream, long length,
-            Schema schema, ICobolComplexBinding cobolBinding)
+            CobolComplexType cobolType, Schema schema) throws IOException {
+        this(inStream, length, new EbcdicCobolContext(), cobolType, null,
+                schema);
+    }
+
+    public ZosVarRdwDatumReader(InputStream inStream, long length,
+            CobolContext cobolContext, CobolComplexType cobolType, Schema schema)
             throws IOException {
-        super(inStream, length, schema, cobolBinding);
+        this(inStream, length, cobolContext, cobolType, null, schema);
+    }
+
+    public ZosVarRdwDatumReader(InputStream inStream, long length,
+            CobolContext cobolContext, CobolComplexType cobolType,
+            FromCobolChoiceStrategy customChoiceStrategy, Schema schema)
+            throws IOException {
+        super(inStream, length, cobolContext, cobolType, customChoiceStrategy, schema);
     }
 
     /**

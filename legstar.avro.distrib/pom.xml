@@ -54,23 +54,7 @@
 
     <plugins>
       
-      <!-- Store maven classpath in a property for cob2trans -->
-      <plugin>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>validate</phase>
-            <goals>
-              <goal>build-classpath</goal>
-            </goals>
-            <configuration>
-              <outputProperty>maven.compile.classpath</outputProperty>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <!-- Invoke cob2avrotrans for copybooks translation to Avro schemas and code -->
+      <!-- Invoke Cob2AvroGeneratorMain for copybooks translation to Avro schemas and code -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
@@ -82,8 +66,8 @@
               <goal>java</goal>
             </goals>
             <configuration>
-              <mainClass>com.legstar.avro.generator.Cob2AvroTransMain</mainClass>
-              <commandlineArgs>-i ${basedir}/src/main/cobol -o ${project.build.directory}/gen -c ${basedir}/src/main/resources/cob2avrotrans.properties -cp ${maven.compile.classpath}</commandlineArgs>
+              <mainClass>com.legstar.avro.generator.Cob2AvroGeneratorMain</mainClass>
+              <commandlineArgs>-i ${basedir}/src/main/cobol -o ${project.build.directory}/gen -p com.legstar.avro.samples</commandlineArgs>
               <systemProperties>
                 <systemProperty>
                   <key>log4j.configuration</key>

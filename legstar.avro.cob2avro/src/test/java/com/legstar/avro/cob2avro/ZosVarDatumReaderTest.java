@@ -5,8 +5,8 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.FileInputStream;
 
-import legstar.avro.test.beans.cusdat.bind.CustomerDataBinding;
-import legstar.avro.test.specific.cusdat.CustomerData;
+import legstar.test.avro.custdat.CobolCustomerData;
+import legstar.test.avro.custdat.CustomerData;
 
 import org.apache.avro.Schema;
 import org.junit.Test;
@@ -23,11 +23,11 @@ public class ZosVarDatumReaderTest {
     @Test
     public void testReadCustdatFromStart() throws Exception {
         Schema schema = new Schema.Parser().parse(new File("target/gen/avsc/"
-                + "cusdat.avsc"));
+                + "custdat.avsc"));
         File inFile = new File("src/test/data/ZOS.FCUSTDAT.bin");
         ZosVarDatumReader<CustomerData> datumReader = new ZosVarDatumReader<CustomerData>(
-                new FileInputStream(inFile), inFile.length(), schema,
-                new CustomerDataBinding());
+                new FileInputStream(inFile), inFile.length(),
+                new CobolCustomerData(), schema);
         int count = 0;
         while (datumReader.hasNext()) {
             CustomerData specific = datumReader.next();
@@ -40,16 +40,16 @@ public class ZosVarDatumReaderTest {
     @Test
     public void testReadCustdatFromOffset() throws Exception {
         Schema schema = new Schema.Parser().parse(new File("target/gen/avsc/"
-                + "cusdat.avsc"));
+                + "custdat.avsc"));
         File inFile = new File("src/test/data/ZOS.FCUSTDAT.bin");
         FileInputStream is = new FileInputStream(inFile);
         
-        // Read one byte (means first record read by reader is trubcated)
+        // Read one byte (means first record read by reader is truncated)
         is.read();
         
         ZosVarDatumReader<CustomerData> datumReader = new ZosVarDatumReader<CustomerData>(
-                is, inFile.length() -1, schema,
-                new CustomerDataBinding());
+                is, inFile.length() -1,
+                new CobolCustomerData(), schema);
         
         // Synchronize at start of the next record
         datumReader.seekRecordStart(new CustdatZosRecordMatcher());

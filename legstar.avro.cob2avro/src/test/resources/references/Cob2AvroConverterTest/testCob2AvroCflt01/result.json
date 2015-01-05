@@ -1,0 +1,14 @@
+{
+  "cfltParent1" : {
+    "cfltInfo" : {
+      "cfltId" : "123456789012345678",
+      "cfltTypCd" : "ABCDE"
+    }
+  },
+  "cfltParent2" : {
+    "cfltInfo" : {
+      "cfltIdCt" : "ABCDEFGHI{ABCDEFGH",
+      "cfltTypCdCt" : "JKLMN"
+    }
+  }
+}

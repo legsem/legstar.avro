@@ -11,7 +11,7 @@ import org.junit.Test;
 
 public class Xsd2AvroTranslatorTest extends AbstractTest {
 
-    private static final boolean CREATE_REFERENCE = true;
+    private static final boolean CREATE_REFERENCE = false;
 
     @Before
     public void setUp() throws Exception {
@@ -116,6 +116,16 @@ public class Xsd2AvroTranslatorTest extends AbstractTest {
         assertEquals(1, mapSchemas.size());
         check(mapSchemas.get("cflt01"), "cflt01.avsc");
         checkSchema(mapSchemas.get("cflt01"), 2);
+    }
+    
+    @Test
+    public void testOptl01() throws Exception {
+        Xsd2AvroTranslator cob2Avro = new Xsd2AvroTranslator();
+        Map<String, String> mapSchemas = cob2Avro.translate(new File(
+                TEST_XSD_FOLDER, "optl01.xsd"), "legstar.avro.test");
+        assertEquals(1, mapSchemas.size());
+        check(mapSchemas.get("optl01"), "optl01.avsc");
+        checkSchema(mapSchemas.get("optl01"), 4);
     }
     
     private void checkSchema(String schemaSource, int expectedFields) throws Exception {

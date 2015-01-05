@@ -7,16 +7,15 @@ import java.util.Iterator;
 
 import org.apache.avro.AvroRuntimeException;
 import org.apache.avro.Schema;
-import org.apache.avro.generic.GenericData;
-import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.specific.SpecificData;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.legstar.coxb.ICobolComplexBinding;
-import com.legstar.coxb.convert.simple.CobolSimpleConverters;
-import com.legstar.coxb.host.HostException;
+import com.legstar.base.context.CobolContext;
+import com.legstar.base.finder.CobolTypeFinder;
+import com.legstar.base.type.composite.CobolComplexType;
+import com.legstar.base.visitor.FromCobolChoiceStrategy;
 
 /**
  * Reads a mainframe byte stream made of concatenated records.
@@ -31,12 +30,32 @@ import com.legstar.coxb.host.HostException;
 public abstract class AbstractZosDatumReader<D> implements Iterator < D >,
         Iterable < D >, Closeable {
 
-    private final ICobolComplexBinding cobolBinding;
-
     private final byte[] hostBytes;
 
+    /**
+     * z/OS data stream.
+     */
     private final InputStream inStream;
 
+    /**
+     * z/OS COBOL configuration parameters
+     */
+    private final CobolContext cobolContext;
+
+    /**
+     * a description of the input mainframe records
+     */
+    private final CobolComplexType cobolType;
+
+    /**
+     * Custom redefines alternative selector. Only needed when the incoming
+     * record has redefines and the default strategy is not good enough.
+     */
+    private final FromCobolChoiceStrategy customChoiceStrategy;
+
+    /**
+     * the Avro schema of the output records
+     */
     private final Schema schema;
 
     /** How many bytes of the original stream were not read yet */
@@ -60,18 +79,30 @@ public abstract class AbstractZosDatumReader<D> implements Iterator < D >,
      */
     private long bytesProcessed;
 
-    private static final CobolSimpleConverters COBOL_CONVERTERS = new CobolSimpleConverters();
-
     private static Logger log = LoggerFactory
             .getLogger(AbstractZosDatumReader.class);
 
+    /**
+     * Create a zos datum reader.
+     * 
+     * @param inStream the incoming z/OS data stream
+     * @param length the total size of the stream
+     * @param cobolContext z/OS COBOL configuration parameters
+     * @param cobolType a description of the input mainframe records
+     * @param customChoiceStrategy custom redefines alternative selector
+     * @param schema the Avro schema of the output records
+     * @throws IOException if reading fails
+     */
     public AbstractZosDatumReader(InputStream inStream, long length,
-            Schema schema, ICobolComplexBinding cobolBinding)
+            CobolContext cobolContext, CobolComplexType cobolType,
+            FromCobolChoiceStrategy customChoiceStrategy, Schema schema)
             throws IOException {
         this.inStream = inStream;
         this.schema = schema;
-        this.cobolBinding = cobolBinding;
-        this.hostBytes = new byte[cobolBinding.getByteLength()
+        this.cobolContext = cobolContext;
+        this.customChoiceStrategy = customChoiceStrategy;
+        this.cobolType = cobolType;
+        this.hostBytes = new byte[cobolType.getMaxBytesLen()
                 + hostBytesPrefixLen()];
         this.available = length;
     }
@@ -87,14 +118,14 @@ public abstract class AbstractZosDatumReader<D> implements Iterator < D >,
     @SuppressWarnings("unchecked")
     public D next() {
         try {
-            GenericRecord genericRecord = new GenericData.Record(schema);
             bytesRead += readRecord(hostBytes, lastProcessed);
-            Cob2AvroUnmarshalVisitor visitor = new Cob2AvroUnmarshalVisitor(
-                    hostBytes, hostBytesPrefixLen(), genericRecord,
-                    COBOL_CONVERTERS);
-            visitor.visit(cobolBinding);
-            bytesProcessed += lastProcessed = visitor.getOffset();
-            D specific = (D) SpecificData.get().deepCopy(schema, genericRecord);
+            Cob2AvroConverter converter = new Cob2AvroConverter(cobolContext,
+                    hostBytes, hostBytesPrefixLen(), customChoiceStrategy,
+                    schema);
+            converter.visit(cobolType);
+            bytesProcessed += lastProcessed = converter.getLastPos();
+            D specific = (D) SpecificData.get().deepCopy(schema,
+                    converter.getResultObject());
 
             if (log.isDebugEnabled()) {
                 log.debug("Avro record=" + specific.toString());
@@ -102,8 +133,6 @@ public abstract class AbstractZosDatumReader<D> implements Iterator < D >,
 
             return specific;
         } catch (IOException e) {
-            throw new AvroRuntimeException(e);
-        } catch (HostException e) {
             throw new AvroRuntimeException(e);
         }
     }
@@ -128,9 +157,9 @@ public abstract class AbstractZosDatumReader<D> implements Iterator < D >,
      * @throws IOException typically if file does not contain a matching record
      *             start
      */
-    public void seekRecordStart(ZosRecordMatcher recordMatcher)
+    public void seekRecordStart(CobolTypeFinder recordMatcher)
             throws IOException {
-        int signatureLen = recordMatcher.signatureLen();
+        int signatureLen = recordMatcher.getSignatureLen();
         if (signatureLen > hostBytes.length) {
             throw new IllegalArgumentException(
                     "The record matcher signature length is longer that the total record length");
@@ -141,7 +170,7 @@ public abstract class AbstractZosDatumReader<D> implements Iterator < D >,
                     "Not enough bytes left for a record signature");
         }
         while (true) {
-            if (recordMatcher.match(hostBytes, 0, signatureLen) > -1) {
+            if (recordMatcher.match(hostBytes, 0, signatureLen)) {
                 break;
             }
             // Shift the buffer one byte to the left

@@ -14,10 +14,10 @@
 
   <dependencies>
 
-    <!-- LegStar -->
+    <!-- LegStar V2 -->
     <dependency>
-      <groupId>com.legsem.legstar</groupId>
-      <artifactId>legstar-cob2trans</artifactId>
+        <groupId>com.legsem.legstar</groupId>
+        <artifactId>legstar-base</artifactId>
     </dependency>
 
     <!-- Apache avro -->
@@ -63,49 +63,7 @@
 
     <plugins>
 
-      <!-- Filters the cob2avrotrans file for cob2avrotrans -->
-      <plugin>
-        <artifactId>maven-resources-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>copy-resources</id>
-            <phase>validate</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${basedir}/target/extra-resources</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>src/test/resources</directory>
-                  <filtering>true</filtering>
-                  <includes>
-                    <include>cob2avrotrans.properties</include>
-                  </includes>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <!-- Store maven classpath in a property for cob2trans -->
-      <plugin>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>validate</phase>
-            <goals>
-              <goal>build-classpath</goal>
-            </goals>
-            <configuration>
-              <outputProperty>maven.compile.classpath</outputProperty>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <!-- Invoke cob2avrotrans for copybooks translation to Avro schemas and code -->
+      <!-- Invoke Cob2AvroGeneratorMain for copybooks translation to Avro schemas and code -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
@@ -117,8 +75,8 @@
               <goal>java</goal>
             </goals>
             <configuration>
-              <mainClass>com.legstar.avro.generator.Cob2AvroTransMain</mainClass>
-              <commandlineArgs>-i ${basedir}/src/test/cobol -o ${project.build.directory}/gen -c ${basedir}/target/extra-resources/cob2avrotrans.properties -cp ${maven.compile.classpath}</commandlineArgs>
+              <mainClass>com.legstar.avro.generator.Cob2AvroGeneratorMain</mainClass>
+              <commandlineArgs>-i ${basedir}/src/test/cobol -o ${project.build.directory}/gen -p legstar.test.avro</commandlineArgs>
               <systemProperties>
                 <systemProperty>
                   <key>log4j.configuration</key>
@@ -153,8 +111,9 @@
       <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
-              <!--  Activate yourkit for tests
-              <argLine>-agentlib:yjpagent</argLine> -->
+              <!--  Activate yourkit for tests -->
+              <!--  <argLine>-agentlib:yjpagent=tracing,alloceach=10</argLine> -->
+              <!--  ex mvn -Dtest=com.legstar.avro.cob2avro.ZosVarDatumReaderTest#testReadCustdatFromStart test-->
           </configuration>
       </plugin>
 

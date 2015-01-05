@@ -8,6 +8,7 @@
     <property name="javadir" location="java"/>
     <property name="gendir" location="gen"/>
     <property name="genjavadir" location="${gendir}/java"/>
+    <property name="genpkgpfx" value="com.legstar.avro.samples"/>
     <property name="bindir" location="bin"/>
 
     <!-- Classpath for generation and compilation-->
@@ -23,8 +24,8 @@
     </target>
 
     <target name="generate" depends="init">
-        <java classname="com.legstar.avro.generator.Cob2AvroTransMain" fork="true" failonerror="true">
-            <arg line="-i ${cobdir} -o ${gendir} -cp ${project.classpath}"/>
+        <java classname="com.legstar.avro.generator.Cob2AvroGeneratorMain" fork="true" failonerror="true">
+            <arg line="-i ${cobdir} -o ${gendir} -p ${genpkgpfx}"/>
             <classpath path="${project.classpath}"/>
         </java>
     </target>
@@ -39,7 +40,7 @@
     </target>
 
     <target name="run" depends="compile">
-        <java classname="com.legstar.avro.cob2avro.samples.CustdatReader" fork="true" failonerror="true">
+        <java classname="${genpkgpfx}.custdat.CustdatReader" fork="true" failonerror="true">
             <classpath>
                 <pathelement path="${project.classpath}"/>
                 <pathelement location="${bindir}"/>

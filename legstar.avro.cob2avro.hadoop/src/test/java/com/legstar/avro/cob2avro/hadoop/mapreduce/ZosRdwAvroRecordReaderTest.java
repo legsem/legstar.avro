@@ -6,8 +6,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import legstar.avro.test.beans.cusdat.bind.CustomerDataBinding;
-import legstar.avro.test.specific.cusdat.CustomerData;
+import legstar.test.avro.custdat.CobolCustomerData;
+import legstar.test.avro.custdat.CustomerData;
 
 import org.apache.avro.mapred.AvroKey;
 import org.apache.avro.mapreduce.AvroJob;
@@ -34,6 +34,7 @@ import org.junit.rules.TestName;
 
 import com.legstar.avro.cob2avro.hadoop.mapreduce.Cob2AvroJob;
 import com.legstar.avro.cob2avro.hadoop.mapreduce.ZosRdwAvroInputFormat;
+import com.legstar.base.context.EbcdicCobolContext;
 
 public class ZosRdwAvroRecordReaderTest {
 
@@ -94,10 +95,10 @@ public class ZosRdwAvroRecordReaderTest {
 
         FileInputFormat.addInputPath(job, inPath);
         job.setInputFormatClass(ZosRdwAvroInputFormat.class);
+        Cob2AvroJob.setInputKeyCobolContext(job, EbcdicCobolContext.class);
+        Cob2AvroJob.setInputKeyRecordType(job, CobolCustomerData.class);
+        Cob2AvroJob.setInputRecordMatcher(job, CustdatZosRdwRecordMatcher.class);
         AvroJob.setInputKeySchema(job, CustomerData.getClassSchema());
-        Cob2AvroJob.setInputKeyBindingClass(job, CustomerDataBinding.class);
-        Cob2AvroJob.setInputRecordMatcherClass(job,
-                CustdatZosRdwRecordMatcher.class);
         job.setMapperClass(MyMapper.class);
 
         FileOutputFormat.setOutputPath(job, outPath);

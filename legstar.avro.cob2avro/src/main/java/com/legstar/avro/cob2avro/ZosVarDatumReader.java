@@ -5,7 +5,10 @@ import java.io.InputStream;
 
 import org.apache.avro.Schema;
 
-import com.legstar.coxb.ICobolComplexBinding;
+import com.legstar.base.context.CobolContext;
+import com.legstar.base.context.EbcdicCobolContext;
+import com.legstar.base.type.composite.CobolComplexType;
+import com.legstar.base.visitor.FromCobolChoiceStrategy;
 
 /**
  * Reads a mainframe byte stream where records are variable size.
@@ -33,9 +36,24 @@ public class ZosVarDatumReader<D> extends AbstractZosDatumReader < D > {
     /** Number of bytes that were passed to the user but he did not process yet. */
     private int residual;
 
-    public ZosVarDatumReader(InputStream inStream, long length, Schema schema,
-            ICobolComplexBinding cobolBinding) throws IOException {
-        super(inStream, length, schema, cobolBinding);
+    public ZosVarDatumReader(InputStream inStream, long length,
+            CobolComplexType cobolType, Schema schema) throws IOException {
+        this(inStream, length, new EbcdicCobolContext(), cobolType, null,
+                schema);
+    }
+
+    public ZosVarDatumReader(InputStream inStream, long length,
+            CobolContext cobolContext, CobolComplexType cobolType, Schema schema)
+            throws IOException {
+        this(inStream, length, cobolContext, cobolType, null, schema);
+    }
+
+    public ZosVarDatumReader(InputStream inStream, long length,
+            CobolContext cobolContext, CobolComplexType cobolType,
+            FromCobolChoiceStrategy customChoiceStrategy, Schema schema)
+            throws IOException {
+        super(inStream, length, cobolContext, cobolType, customChoiceStrategy,
+                schema);
     }
 
     /**

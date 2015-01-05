@@ -1,4 +1,4 @@
-package com.legstar.avro.cob2avro.samples;
+package com.legstar.avro.samples.custdat;
 
 import java.io.IOException;
 
@@ -19,11 +19,9 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
-import com.legstar.avro.beans.custdat.bind.CustomerDataBinding;
-import com.legstar.avro.specific.custdat.CustomerData;
-
 import com.legstar.avro.cob2avro.hadoop.mapreduce.Cob2AvroJob;
 import com.legstar.avro.cob2avro.hadoop.mapreduce.ZosRdwAvroInputFormat;
+import com.legstar.base.context.EbcdicCobolContext;
 
 public class CustdatHadoopReader extends Configured implements Tool {
 
@@ -51,10 +49,10 @@ public class CustdatHadoopReader extends Configured implements Tool {
 
         FileInputFormat.addInputPath(job, new Path(args[0]));
         job.setInputFormatClass(ZosRdwAvroInputFormat.class);
+        Cob2AvroJob.setInputKeyCobolContext(job, EbcdicCobolContext.class);
+        Cob2AvroJob.setInputKeyRecordType(job, CobolCustomerData.class);
+        Cob2AvroJob.setInputRecordMatcher(job, CustdatZosRdwRecordMatcher.class);
         AvroJob.setInputKeySchema(job, CustomerData.getClassSchema());
-        Cob2AvroJob.setInputKeyBindingClass(job, CustomerDataBinding.class);
-        Cob2AvroJob.setInputRecordMatcherClass(job,
-                CustdatZosRdwRecordMatcher.class);
         job.setMapperClass(MyMapper.class);
 
         FileOutputFormat.setOutputPath(job, new Path(args[1]));

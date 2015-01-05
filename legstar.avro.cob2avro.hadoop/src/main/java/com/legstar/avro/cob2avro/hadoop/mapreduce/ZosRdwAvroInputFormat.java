@@ -13,8 +13,10 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.legstar.avro.cob2avro.ZosRecordMatcher;
-import com.legstar.coxb.ICobolComplexBinding;
+import com.legstar.base.context.CobolContext;
+import com.legstar.base.finder.CobolTypeFinder;
+import com.legstar.base.type.composite.CobolComplexType;
+import com.legstar.base.visitor.FromCobolChoiceStrategy;
 
 /**
  * Reads a mainframe file into Avro keys.
@@ -40,25 +42,34 @@ import com.legstar.coxb.ICobolComplexBinding;
 public class ZosRdwAvroInputFormat<T> extends
         FileInputFormat < AvroKey < T >, NullWritable > {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ZosRdwAvroInputFormat.class);
+    private static final Logger LOG = LoggerFactory
+            .getLogger(ZosRdwAvroInputFormat.class);
 
     public RecordReader < AvroKey < T >, NullWritable > createRecordReader(
             InputSplit split, TaskAttemptContext context) throws IOException,
             InterruptedException {
         try {
-            Schema readerSchema = AvroJob.getInputKeySchema(context
+            Class < ? extends CobolContext > cobolContextClass = Cob2AvroJob
+                    .getInputKeyCobolContext(context.getConfiguration());
+            Class < ? extends CobolComplexType > cobolTypeClass = Cob2AvroJob
+                    .getInputKeyRecordType(context.getConfiguration());
+            Class < ? extends CobolTypeFinder > matcherClass = Cob2AvroJob
+                    .getInputRecordMatcher(context.getConfiguration());
+            Class < ? extends FromCobolChoiceStrategy > choiceStrategyClass = Cob2AvroJob
+                    .getInputChoiceStrategy(context.getConfiguration());
+            Schema schema = AvroJob.getInputKeySchema(context
                     .getConfiguration());
-            Class < ? extends ICobolComplexBinding > bindingClass = Cob2AvroJob
-                    .getInputKeyBindingClass(context.getConfiguration());
-            Class < ? extends ZosRecordMatcher > matcherClass = Cob2AvroJob
-                    .getInputRecordMatcherClass(context.getConfiguration());
 
-            if (!isValid(readerSchema, bindingClass, matcherClass)) {
+            if (!isValid(cobolContextClass, cobolTypeClass, matcherClass,
+                    choiceStrategyClass, schema)) {
                 throw new IOException("Invalid configuration");
             }
-            
-            return new ZosRdwAvroRecordReader < T >(readerSchema,
-                    bindingClass.newInstance(), matcherClass.newInstance());
+
+            return new ZosRdwAvroRecordReader < T >(
+                    cobolContextClass.newInstance(),
+                    cobolTypeClass.newInstance(),
+                    choiceStrategyClass == null ? null : choiceStrategyClass
+                            .newInstance(), matcherClass.newInstance(), schema);
 
         } catch (InstantiationException e) {
             throw new IOException(e);
@@ -66,22 +77,28 @@ public class ZosRdwAvroInputFormat<T> extends
             throw new IOException(e);
         }
     }
-    
-    private boolean isValid(Schema readerSchema,
-            Class < ? extends ICobolComplexBinding > bindingClass,
-            Class < ? extends ZosRecordMatcher > matcherClass) {
+
+    private boolean isValid(Class < ? extends CobolContext > cobolContextClass,
+            Class < ? extends CobolComplexType > cobolTypeClass,
+            Class < ? extends CobolTypeFinder > matcherClass,
+            Class < ? extends FromCobolChoiceStrategy > choiceStrategyClass,
+            Schema schema) {
 
         boolean valid = true;
-        if (null == readerSchema) {
+        if (null == cobolContextClass) {
+            LOG.error("Mainframe COBOL parameters class was not set. Use Cob2AvroJob.setInputKeyCobolContext().");
+            valid = false;
+        }
+        if (null == cobolTypeClass) {
+            LOG.error("Mainframe record type class was not set. Use Cob2AvroJob.setInputKeyRecordType().");
+            valid = false;
+        }
+        if (null == matcherClass) {
+            LOG.error("Mainframe record matcher class was not set. Use Cob2AvroJob.setInputRecordMatcher().");
+            valid = false;
+        }
+        if (null == schema) {
             LOG.error("Reader schema was not set. Use AvroJob.setInputKeySchema().");
-            valid = false;
-        }
-        if (null == bindingClass) {
-            LOG.error("Reader COBOL binding class was not set. Use Cob2AvroJob.setInputKeyBindingClass().");
-            valid = false;
-        }
-        if (null == bindingClass) {
-            LOG.error("Reader record matcher class was not set. Use Cob2AvroJob.setInputRecordMatcherClass().");
             valid = false;
         }
         return valid;

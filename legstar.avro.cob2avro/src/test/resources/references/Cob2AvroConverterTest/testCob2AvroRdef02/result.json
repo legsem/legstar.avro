@@ -1,0 +1,14 @@
+{
+  "rdef02Key" : {
+    "rdef02Item1Choice" : {
+      "string" : "ABCJKL"
+    },
+    "comSelect" : 0
+  },
+  "comDetail1Choice" : {
+    "legstar.test.avro.rdef02.ComDetail1" : {
+      "comName" : "NAME000005"
+    }
+  },
+  "comItem3" : "\u0003÷ "
+}

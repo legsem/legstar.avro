@@ -1,4 +1,4 @@
-package com.legstar.avro.cob2avro.samples;
+package com.legstar.avro.samples.custdat;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -6,10 +6,6 @@ import java.io.FileInputStream;
 import org.apache.avro.Schema;
 
 import com.legstar.avro.cob2avro.ZosVarRdwDatumReader;
-
-import com.legstar.avro.beans.custdat.bind.CustomerDataBinding;
-import com.legstar.avro.specific.custdat.CustomerData;
-
 
 public class CustdatReader {
 
@@ -28,8 +24,8 @@ public class CustdatReader {
         File inFile = new File(ZOS_FILE_PATH);
 
         ZosVarRdwDatumReader < CustomerData > reader = new ZosVarRdwDatumReader < CustomerData >(
-                new FileInputStream(inFile), inFile.length(), schema,
-                new CustomerDataBinding());
+                new FileInputStream(inFile), inFile.length(),
+                new CobolCustomerData(), schema);
 
         while (reader.hasNext()) {
             CustomerData avroRecord = reader.next();

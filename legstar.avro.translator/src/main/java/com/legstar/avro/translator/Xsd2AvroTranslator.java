@@ -41,6 +41,7 @@ import org.apache.ws.commons.schema.utils.XmlSchemaObjectBase;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ArrayNode;
+import org.codehaus.jackson.node.ContainerNode;
 import org.codehaus.jackson.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -159,8 +160,7 @@ public class Xsd2AvroTranslator {
             for (Entry < QName, XmlSchemaElement > entry : items.entrySet()) {
                 visit(xmlSchema, entry.getValue(), 1, avroFields);
             }
-            rootAvroSchema = buildAvroRecordType(avroSchemaName, avroFields,
-                    false);
+            rootAvroSchema = buildAvroRecordType(avroSchemaName, avroFields);
 
         } else if (items.size() == 1) {
             XmlSchemaElement xsdElement = (XmlSchemaElement) items.values()
@@ -170,7 +170,7 @@ public class Xsd2AvroTranslator {
                         .getSchemaType();
                 visit(xmlSchema, xsdType, 1, avroFields);
                 rootAvroSchema = buildAvroRecordType(getAvroTypeName(xsdType),
-                        avroFields, xsdElement.getMaxOccurs() > 1);
+                        avroFields);
             } else {
                 throw new Xsd2AvroTranslatorException(
                         "XML schema does contain a root element but it is not a complex type");
@@ -188,14 +188,12 @@ public class Xsd2AvroTranslator {
         return rootAvroSchema.toString();
     }
 
-    private ObjectNode buildAvroRecordType(String avroRecordTypeName,
-            final ArrayNode avroFields, boolean isArray)
+    private ContainerNode buildAvroCompositeType(String avroRecordTypeName,
+            final ArrayNode avroFields, boolean isArray, boolean isOptional)
             throws Xsd2AvroTranslatorException {
 
-        ObjectNode avroRecord = MAPPER.createObjectNode();
-        avroRecord.put("type", "record");
-        avroRecord.put("name", avroRecordTypeName);
-        avroRecord.put("fields", avroFields);
+        ObjectNode avroRecord = buildAvroRecordType(avroRecordTypeName,
+                avroFields);
 
         if (isArray) {
             ObjectNode avroArray = MAPPER.createObjectNode();
@@ -203,6 +201,22 @@ public class Xsd2AvroTranslator {
             avroArray.put("items", avroRecord);
             return avroArray;
         }
+        if (isOptional) {
+            ArrayNode typesArray = MAPPER.createArrayNode();
+            typesArray.add(avroRecord);
+            typesArray.add("null");
+            return typesArray;
+        }
+
+        return avroRecord;
+    }
+
+    private ObjectNode buildAvroRecordType(String avroRecordTypeName,
+            final ArrayNode avroFields) throws Xsd2AvroTranslatorException {
+        ObjectNode avroRecord = MAPPER.createObjectNode();
+        avroRecord.put("type", "record");
+        avroRecord.put("name", avroRecordTypeName);
+        avroRecord.put("fields", avroFields);
         return avroRecord;
     }
 
@@ -235,9 +249,11 @@ public class Xsd2AvroTranslator {
             int nextLevel = level + 1;
             final ArrayNode avroChildrenFields = MAPPER.createArrayNode();
             visit(xmlSchema, xsdType, nextLevel, avroChildrenFields);
-            ObjectNode avroRecordType = buildAvroRecordType(
+            ContainerNode avroRecordType = buildAvroCompositeType(
                     getAvroTypeName(xsdType), avroChildrenFields,
-                    xsdElement.getMaxOccurs() > 1);
+                    xsdElement.getMaxOccurs() > 1,
+                    xsdElement.getMinOccurs() == 0
+                            && xsdElement.getMaxOccurs() == 1);
             ObjectNode avroRecordElement = MAPPER.createObjectNode();
             avroRecordElement.put("type", avroRecordType);
             avroRecordElement.put("name", getAvroFieldName(xsdElement));
@@ -245,8 +261,8 @@ public class Xsd2AvroTranslator {
 
         } else if (xsdElement.getSchemaType() instanceof XmlSchemaSimpleType) {
             visit((XmlSchemaSimpleType) xsdElement.getSchemaType(), level,
-                    getAvroFieldName(xsdElement), xsdElement.getMaxOccurs(),
-                    avroFields);
+                    getAvroFieldName(xsdElement), xsdElement.getMinOccurs(),
+                    xsdElement.getMaxOccurs(), avroFields);
         }
 
         log.debug("process ended for element = " + xsdElement.getName());
@@ -273,16 +289,17 @@ public class Xsd2AvroTranslator {
      * @param xsdType the XML schema simple type
      * @param level the depth in the hierarchy
      * @param avroFieldName to use as the field name for this avro field
+     * @param minOccurs lower dimension for arrays & zero for optional fields
      * @param maxOccurs dimension for arrays
      * @param avroFields array of avro fields being populated
      * @throws Xsd2AvroTranslatorException if something abnormal in the xsd
      */
     private void visit(XmlSchemaSimpleType xsdType, final int level,
-            final String avroFieldName, long maxOccurs, ArrayNode avroFields)
-            throws Xsd2AvroTranslatorException {
+            final String avroFieldName, long minOccurs, long maxOccurs,
+            ArrayNode avroFields) throws Xsd2AvroTranslatorException {
 
         Object avroType = getAvroPrimitiveType(avroFieldName, xsdType,
-                maxOccurs > 1);
+                maxOccurs > 1, minOccurs == 0 && maxOccurs == 1);
 
         ObjectNode avroField = MAPPER.createObjectNode();
         avroField.put("name", avroFieldName);
@@ -413,13 +430,14 @@ public class Xsd2AvroTranslator {
      * @param avroFieldName the json avro field name being built
      * @param xsdType an XML schema Type or null if none can be derived
      * @param isArray if this is an array of simple types
+     * @param isOptional if this is an optional field
      * @return a String or JSON object representing the schema of the simple
      *         type
      * @throws Xsd2AvroTranslatorException if something abnormal in the xsd
      */
     private Object getAvroPrimitiveType(final String avroFieldName,
-            final XmlSchemaSimpleType xsdType, boolean isArray)
-            throws Xsd2AvroTranslatorException {
+            final XmlSchemaSimpleType xsdType, boolean isArray,
+            boolean isOptional) throws Xsd2AvroTranslatorException {
         XmlSchemaSimpleTypeRestriction restriction = (XmlSchemaSimpleTypeRestriction) xsdType
                 .getContent();
         if (restriction != null && restriction.getBaseTypeName() != null) {
@@ -473,12 +491,23 @@ public class Xsd2AvroTranslator {
                 }
                 return avroArrayType;
 
-            } else {
+            }
+
+            if (isOptional) {
+                ArrayNode typesArray = MAPPER.createArrayNode();
                 if (avroType == null) {
-                    return avroPrimitiveType;
+                    typesArray.add(avroPrimitiveType);
                 } else {
-                    return avroType;
+                    typesArray.add(avroType);
                 }
+                typesArray.add("null");
+                return typesArray;
+            }
+
+            if (avroType == null) {
+                return avroPrimitiveType;
+            } else {
+                return avroType;
             }
         } else {
             log.warn("Simple type without restriction " + xsdType.getName());

@@ -1,0 +1,21 @@
+{
+  "comNumber" : 62,
+  "comName" : "NAME000062",
+  "comAmount" : "\u0004ºð",
+  "comArray" : [ {
+    "comItem1" : 62,
+    "comItem2" : "AB"
+  }, {
+    "comItem1" : 31,
+    "comItem2" : "AB"
+  }, {
+    "comItem1" : 20,
+    "comItem2" : "AB"
+  }, {
+    "comItem1" : 15,
+    "comItem2" : "AB"
+  }, {
+    "comItem1" : 12,
+    "comItem2" : "AB"
+  } ]
+}
