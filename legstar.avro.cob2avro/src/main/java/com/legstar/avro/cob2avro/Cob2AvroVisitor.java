@@ -20,7 +20,7 @@ import com.legstar.base.type.primitive.CobolPrimitiveType;
 import com.legstar.base.visitor.FromCobolChoiceStrategy;
 import com.legstar.base.visitor.FromCobolVisitor;
 
-public class Cob2AvroConverter extends FromCobolVisitor {
+public class Cob2AvroVisitor extends FromCobolVisitor {
 
     /** Holds the current avro schema during the course of visiting fields.*/
     private Schema currentSchema;
@@ -38,18 +38,18 @@ public class Cob2AvroConverter extends FromCobolVisitor {
     // -----------------------------------------------------------------------------
     // Constructors
     // -----------------------------------------------------------------------------
-    public Cob2AvroConverter(CobolContext cobolContext, byte[] hostData,
+    public Cob2AvroVisitor(CobolContext cobolContext, byte[] hostData,
             int start, Schema schema) {
         this(cobolContext, hostData, start, null, schema);
     }
 
-    public Cob2AvroConverter(CobolContext cobolContext, byte[] hostData,
+    public Cob2AvroVisitor(CobolContext cobolContext, byte[] hostData,
             int start, FromCobolChoiceStrategy customChoiceStrategy,
             Schema schema) {
         this(cobolContext, hostData, start, customChoiceStrategy, null, schema);
     }
 
-    public Cob2AvroConverter(CobolContext cobolContext, byte[] hostData,
+    public Cob2AvroVisitor(CobolContext cobolContext, byte[] hostData,
             int start, FromCobolChoiceStrategy customChoiceStrategy,
             Set < String > customVariables, Schema schema) {
         super(cobolContext, hostData, start, customChoiceStrategy,

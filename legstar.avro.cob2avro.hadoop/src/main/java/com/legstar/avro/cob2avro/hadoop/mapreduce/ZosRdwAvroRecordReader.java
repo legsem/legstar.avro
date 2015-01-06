@@ -14,7 +14,7 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 
-import com.legstar.avro.cob2avro.ZosVarRdwDatumReader;
+import com.legstar.avro.cob2avro.io.ZosVarRdwDatumReader;
 import com.legstar.base.context.CobolContext;
 import com.legstar.base.finder.CobolTypeFinder;
 import com.legstar.base.type.composite.CobolComplexType;

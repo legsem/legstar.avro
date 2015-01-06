@@ -1,7 +1,7 @@
 legstar.avro
 ============
 
-  A COBOL to [Apache Avro](http://avro.apache.org/) translator based on [LegStar](http://www.legsem.com/legstar/)
+  A COBOL to [Apache Avro](http://avro.apache.org/) translator based on [LegStar](https://github.com/legsem/legstar-core2)
 
   The idea is that mainframe data might be useful in environments where Apache Avro records are commonplace. One such environment is [Hadoop](http://hadoop.apache.org/) where [MapReduce jobs](http://en.wikipedia.org/wiki/MapReduce) can read/write Avro records.
 

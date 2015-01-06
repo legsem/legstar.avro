@@ -1,4 +1,4 @@
-package com.legstar.avro.cob2avro;
+package com.legstar.avro.cob2avro.io;
 
 import legstar.test.avro.custdat.CobolCustomerData;
 

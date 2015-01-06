@@ -5,7 +5,7 @@ import java.io.FileInputStream;
 
 import org.apache.avro.Schema;
 
-import com.legstar.avro.cob2avro.ZosVarRdwDatumReader;
+import com.legstar.avro.cob2avro.io.ZosVarRdwDatumReader;
 
 public class CustdatReader {
 

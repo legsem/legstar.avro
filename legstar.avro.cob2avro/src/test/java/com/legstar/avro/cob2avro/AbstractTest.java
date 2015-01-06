@@ -1,10 +1,20 @@
 package com.legstar.avro.cob2avro;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 
 import static org.junit.Assert.*;
 
+import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericDatumWriter;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.io.DatumReader;
+import org.apache.avro.io.DatumWriter;
+import org.apache.avro.io.DecoderFactory;
+import org.apache.avro.io.Encoder;
+import org.apache.avro.io.EncoderFactory;
+import org.apache.avro.specific.SpecificDatumReader;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
@@ -62,4 +72,53 @@ public class AbstractTest {
         this.createReferences = createReferences;
     }
 
+    public Schema getSchema(String casename) {
+        try {
+            return new Schema.Parser().parse(new File("target/gen/avsc/"
+                    + casename + ".avsc"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String avro2Json(GenericRecord genericRecord) {
+        try {
+            DatumWriter < GenericRecord > datumWriter = new GenericDatumWriter < GenericRecord >(
+                    genericRecord.getSchema());
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            Encoder encoder = EncoderFactory.get().jsonEncoder(
+                    genericRecord.getSchema(), out, true);
+            datumWriter.write(genericRecord, encoder);
+            encoder.flush();
+            out.close();
+            return new String(out.toByteArray(), "UTF-8");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public byte[] avroSerializeGeneric(GenericRecord genericRecord) {
+        try {
+            DatumWriter < GenericRecord > datumWriter = new GenericDatumWriter < GenericRecord >(
+                    genericRecord.getSchema());
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            Encoder encoder = EncoderFactory.get().directBinaryEncoder(out,
+                    null);
+            datumWriter.write(genericRecord, encoder);
+            return out.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public <T> void avroReadSpecific(Class < T > clazz, byte[] data) {
+        try {
+            DatumReader < T > datumReader = new SpecificDatumReader < T >(clazz);
+            Object decoded = datumReader.read(null, DecoderFactory.get()
+                    .binaryDecoder(data, null));
+            System.out.println(decoded);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

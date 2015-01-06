@@ -1,4 +1,4 @@
-package com.legstar.avro.cob2avro;
+package com.legstar.avro.cob2avro.io;
 
 import static org.junit.Assert.*;
 
@@ -13,19 +13,19 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.legstar.avro.cob2avro.ZosVarDatumReader;
+import com.legstar.avro.cob2avro.io.ZosVarRdwDatumReader;
 
-public class ZosVarDatumReaderTest {
+public class ZosVarRdwDatumReaderTest {
 
     private static Logger log = LoggerFactory
-            .getLogger(ZosVarDatumReaderTest.class);
+            .getLogger(ZosVarRdwDatumReaderTest.class);
 
     @Test
     public void testReadCustdatFromStart() throws Exception {
         Schema schema = new Schema.Parser().parse(new File("target/gen/avsc/"
                 + "custdat.avsc"));
-        File inFile = new File("src/test/data/ZOS.FCUSTDAT.bin");
-        ZosVarDatumReader<CustomerData> datumReader = new ZosVarDatumReader<CustomerData>(
+        File inFile = new File("src/test/data/ZOS.FCUSTDAT.RDW.bin");
+        ZosVarRdwDatumReader<CustomerData> datumReader = new ZosVarRdwDatumReader<CustomerData>(
                 new FileInputStream(inFile), inFile.length(),
                 new CobolCustomerData(), schema);
         int count = 0;
@@ -41,18 +41,18 @@ public class ZosVarDatumReaderTest {
     public void testReadCustdatFromOffset() throws Exception {
         Schema schema = new Schema.Parser().parse(new File("target/gen/avsc/"
                 + "custdat.avsc"));
-        File inFile = new File("src/test/data/ZOS.FCUSTDAT.bin");
+        File inFile = new File("src/test/data/ZOS.FCUSTDAT.RDW.bin");
         FileInputStream is = new FileInputStream(inFile);
         
-        // Read one byte (means first record read by reader is truncated)
+        // Read one byte (means first record read by reader is trubcated)
         is.read();
         
-        ZosVarDatumReader<CustomerData> datumReader = new ZosVarDatumReader<CustomerData>(
+        ZosVarRdwDatumReader<CustomerData> datumReader = new ZosVarRdwDatumReader<CustomerData>(
                 is, inFile.length() -1,
                 new CobolCustomerData(), schema);
         
         // Synchronize at start of the next record
-        datumReader.seekRecordStart(new CustdatZosRecordMatcher());
+        datumReader.seekRecordStart(new CustdatZosRdwRecordMatcher());
         
         
         int count = 0;
@@ -66,7 +66,8 @@ public class ZosVarDatumReaderTest {
         
         
     }
-    
+
+
     private void logCustomerData(CustomerData specific) {
         log.info(
                 "Record customer id={}, customer name={}, transaction amount={}",
@@ -77,6 +78,4 @@ public class ZosVarDatumReaderTest {
                         .getTransactionAmount() : "none");
 
     }
-
-
 }

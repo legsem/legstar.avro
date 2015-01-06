@@ -1,4 +1,4 @@
-package com.legstar.avro.cob2avro;
+package com.legstar.avro.cob2avro.io;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -7,11 +7,14 @@ import java.util.Iterator;
 
 import org.apache.avro.AvroRuntimeException;
 import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.specific.SpecificData;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.legstar.avro.cob2avro.Cob2AvroGenericConverter;
+import com.legstar.base.FromHostResult;
 import com.legstar.base.context.CobolContext;
 import com.legstar.base.finder.CobolTypeFinder;
 import com.legstar.base.type.composite.CobolComplexType;
@@ -38,25 +41,10 @@ public abstract class AbstractZosDatumReader<D> implements Iterator < D >,
     private final InputStream inStream;
 
     /**
-     * z/OS COBOL configuration parameters
+     * Performs the actual conversion from mainframe representation to an Avro
+     * generic record.
      */
-    private final CobolContext cobolContext;
-
-    /**
-     * a description of the input mainframe records
-     */
-    private final CobolComplexType cobolType;
-
-    /**
-     * Custom redefines alternative selector. Only needed when the incoming
-     * record has redefines and the default strategy is not good enough.
-     */
-    private final FromCobolChoiceStrategy customChoiceStrategy;
-
-    /**
-     * the Avro schema of the output records
-     */
-    private final Schema schema;
+    private final Cob2AvroGenericConverter converter;
 
     /** How many bytes of the original stream were not read yet */
     private long available;
@@ -88,21 +76,21 @@ public abstract class AbstractZosDatumReader<D> implements Iterator < D >,
      * @param inStream the incoming z/OS data stream
      * @param length the total size of the stream
      * @param cobolContext z/OS COBOL configuration parameters
-     * @param cobolType a description of the input mainframe records
+     * @param cobolComplexType a description of the input mainframe records
      * @param customChoiceStrategy custom redefines alternative selector
      * @param schema the Avro schema of the output records
      * @throws IOException if reading fails
      */
     public AbstractZosDatumReader(InputStream inStream, long length,
-            CobolContext cobolContext, CobolComplexType cobolType,
+            CobolContext cobolContext, CobolComplexType cobolComplexType,
             FromCobolChoiceStrategy customChoiceStrategy, Schema schema)
             throws IOException {
         this.inStream = inStream;
-        this.schema = schema;
-        this.cobolContext = cobolContext;
-        this.customChoiceStrategy = customChoiceStrategy;
-        this.cobolType = cobolType;
-        this.hostBytes = new byte[cobolType.getMaxBytesLen()
+        this.converter = new Cob2AvroGenericConverter.Builder()
+                .cobolContext(cobolContext).cobolComplexType(cobolComplexType)
+                .customChoiceStrategy(customChoiceStrategy).schema(schema)
+                .build();
+        this.hostBytes = new byte[cobolComplexType.getMaxBytesLen()
                 + hostBytesPrefixLen()];
         this.available = length;
     }
@@ -119,13 +107,11 @@ public abstract class AbstractZosDatumReader<D> implements Iterator < D >,
     public D next() {
         try {
             bytesRead += readRecord(hostBytes, lastProcessed);
-            Cob2AvroConverter converter = new Cob2AvroConverter(cobolContext,
-                    hostBytes, hostBytesPrefixLen(), customChoiceStrategy,
-                    schema);
-            converter.visit(cobolType);
-            bytesProcessed += lastProcessed = converter.getLastPos();
-            D specific = (D) SpecificData.get().deepCopy(schema,
-                    converter.getResultObject());
+            FromHostResult < GenericRecord > result = converter.convert(
+                    hostBytes, hostBytesPrefixLen());
+            bytesProcessed += lastProcessed = result.getBytesProcessed();
+            D specific = (D) SpecificData.get().deepCopy(
+                    result.getValue().getSchema(), result.getValue());
 
             if (log.isDebugEnabled()) {
                 log.debug("Avro record=" + specific.toString());
