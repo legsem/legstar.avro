@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -15,6 +16,7 @@ import java.util.Properties;
 import org.apache.avro.Schema;
 import org.apache.avro.compiler.specific.SpecificCompiler;
 import org.apache.avro.generic.GenericData.StringType;
+import org.apache.commons.compress.utils.Charsets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
@@ -60,6 +62,9 @@ public class Cob2AvroGenerator {
     private final Xsd2CobolTypesGenerator xsd2CobolTypes;
 
     private final Xsd2AvroTranslator cob2AvroTranslator;
+    
+    /** All output files are in UTF-8. Might want to externalize as a parameter.*/
+    private static final Charset TARGET_FILES_ENCODING = Charsets.UTF_8;
 
     private static Logger log = LoggerFactory
             .getLogger(Cob2AvroGenerator.class);
@@ -216,7 +221,7 @@ public class Cob2AvroGenerator {
             throws IOException {
         File targetFolder = new File(target, targetSubFolder);
         File targetFile = new File(targetFolder, fileName + extension);
-        FileUtils.writeStringToFile(targetFile, source);
+        FileUtils.writeStringToFile(targetFile, source, TARGET_FILES_ENCODING);
         return targetFile;
     }
 
@@ -265,6 +270,7 @@ public class Cob2AvroGenerator {
         Schema schema = parser.parse(avroSchemaSource);
         SpecificCompiler compiler = new CustomSpecificCompiler(schema);
         compiler.setStringType(StringType.CharSequence);
+        compiler.setOutputCharacterEncoding(TARGET_FILES_ENCODING.name());
         compiler.compileToDestination(avroSchemaFile, javaTargetFolder);
 
         log.debug("Avro compiler ended for: {}", avroSchemaFile);

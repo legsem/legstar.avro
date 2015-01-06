@@ -1,0 +1,2 @@
+# Avro always create LF ending files, even on windows.
+*.java text eol=lf
