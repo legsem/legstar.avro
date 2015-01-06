@@ -13,11 +13,11 @@ legstar.avro
 
     * [Avro Schema](http://avro.apache.org/docs/current/#schemas) matching the COBOL copybook
 
-    * [LegStar Java transformation](http://www.legsem.com/legstar/legstar-core/legstar-coxbgen/index.html) code to turn mainframe records to java beans
+    * Conversion logic to turn mainframe records to Avro Generic records
     
-    * Avro specific records (The Generator invokes the Avro compiler for you)
+    * Avro specific records compiled from the Avro schema
 
-* Readers for straight Java, or Hadoop, that read mainframe files and deliver an Avro record for each mainframe record
+* Readers for pure Java, or Hadoop, that read mainframe files and deliver an Avro record for each mainframe record
 
 ![Overview](http://legsem.github.io/images/legstar.avro.overview.png)
 
