@@ -1,5 +1,8 @@
 package com.legstar.avro.cob2avro;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.specific.SpecificData;
@@ -36,7 +39,7 @@ public class Cob2AvroSpecificConverter extends
     private final Cob2AvroGenericConverter converter;
 
     /** The last record converted. */
-    private SpecificRecord datum;
+    private SpecificRecord specificRecord;
 
     public FromHostResult < SpecificRecord > convert(byte[] hostData,
             int start, int length) {
@@ -45,10 +48,10 @@ public class Cob2AvroSpecificConverter extends
         if (result.getValue() == null) {
             return null;
         }
-        this.datum = (SpecificRecord) SpecificData.get().deepCopy(
+        this.specificRecord = (SpecificRecord) SpecificData.get().deepCopy(
                 result.getValue().getSchema(), result.getValue());
         return new FromHostResult < SpecificRecord >(
-                result.getBytesProcessed(), datum);
+                result.getBytesProcessed(), specificRecord);
     }
 
     public boolean isValid(byte[] hostData) {
@@ -62,8 +65,8 @@ public class Cob2AvroSpecificConverter extends
         return validator.isValid();
     }
 
-    public SpecificRecord getDatum() {
-        return datum;
+    public SpecificRecord getSpecificRecord() {
+        return specificRecord;
     }
 
     public int getHostBytesLen() {
@@ -84,6 +87,15 @@ public class Cob2AvroSpecificConverter extends
 
         public Builder schema(Schema schema) {
             this.schema = schema;
+            return this;
+        }
+
+        public Builder schemaFile(File schemaFile) {
+            try {
+                this.schema = new Schema.Parser().parse(schemaFile);
+            } catch (IOException e) {
+                throw new IllegalArgumentException(e);
+            }
             return this;
         }
 

@@ -1,5 +1,8 @@
 package com.legstar.avro.cob2avro;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 
@@ -50,6 +53,15 @@ public class Cob2AvroGenericConverter extends AbstractCob2ObjectConverter < Gene
 
         public Builder schema(Schema schema) {
             this.schema = schema;
+            return this;
+        }
+
+        public Builder schemaFile(File schemaFile) {
+            try {
+                this.schema = new Schema.Parser().parse(schemaFile);
+            } catch (IOException e) {
+                throw new IllegalArgumentException(e);
+            }
             return this;
         }
 
