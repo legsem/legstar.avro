@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.specific.SpecificRecord;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -16,7 +16,7 @@ import com.legstar.base.type.composite.CobolChoiceType;
 import com.legstar.base.utils.HexUtils;
 import com.legstar.base.visitor.FromCobolChoiceStrategy;
 
-public class Cob2AvroGenericConverterTest extends AbstractTest {
+public class Cob2AvroSpecificConverterTest extends AbstractTest {
 
     private static final boolean CREATE_REFERENCE = false;
 
@@ -27,11 +27,11 @@ public class Cob2AvroGenericConverterTest extends AbstractTest {
 
     @Test
     public void testConvertFlat01() {
-        Cob2AvroGenericConverter converter = new Cob2AvroGenericConverter.Builder()
+        Cob2AvroSpecificConverter converter = new Cob2AvroSpecificConverter.Builder()
                 .cobolComplexType(new legstar.test.avro.flat01.CobolFlat01Record())
                 .schema(getSchema("flat01"))
                 .build();
-        FromHostResult < GenericRecord > result = converter.convert(
+        FromHostResult < SpecificRecord > result = converter.convert(
                         HexUtils.decodeHex("F0F0F1F0F4F3D5C1D4C5F0F0F0F0F4F3404040404040404040400215000F"));
         assertEquals(30, result.getBytesProcessed());
         check(avro2Json(result.getValue()), "result.json");
@@ -68,12 +68,12 @@ public class Cob2AvroGenericConverterTest extends AbstractTest {
 
         };
         
-        Cob2AvroGenericConverter converter = new Cob2AvroGenericConverter.Builder()
+        Cob2AvroSpecificConverter converter = new Cob2AvroSpecificConverter.Builder()
                 .cobolComplexType(new legstar.test.avro.rdef01.CobolRdef01Record())
                 .schema(getSchema("rdef01"))
                 .customChoiceStrategy(customChoiceStrategy)
                 .build();
-        FromHostResult < GenericRecord > result = converter.convert(
+        FromHostResult < SpecificRecord > result = converter.convert(
                         HexUtils.decodeHex("00010250000F40404040404000010260000F404040404040"));
         assertEquals(6, result.getBytesProcessed());
         check(avro2Json(result.getValue()), "result.json");

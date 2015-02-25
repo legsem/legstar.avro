@@ -9,6 +9,7 @@ import static org.junit.Assert.*;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.generic.IndexedRecord;
 import org.apache.avro.io.DatumReader;
 import org.apache.avro.io.DatumWriter;
 import org.apache.avro.io.DecoderFactory;
@@ -81,14 +82,14 @@ public class AbstractTest {
         }
     }
 
-    public String avro2Json(GenericRecord genericRecord) {
+    public String avro2Json(IndexedRecord avroRecord) {
         try {
-            DatumWriter < GenericRecord > datumWriter = new GenericDatumWriter < GenericRecord >(
-                    genericRecord.getSchema());
+            DatumWriter < IndexedRecord > datumWriter = new GenericDatumWriter < IndexedRecord >(
+                    avroRecord.getSchema());
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             Encoder encoder = EncoderFactory.get().jsonEncoder(
-                    genericRecord.getSchema(), out, true);
-            datumWriter.write(genericRecord, encoder);
+                    avroRecord.getSchema(), out, true);
+            datumWriter.write(avroRecord, encoder);
             encoder.flush();
             out.close();
             return new String(out.toByteArray(), "UTF-8");

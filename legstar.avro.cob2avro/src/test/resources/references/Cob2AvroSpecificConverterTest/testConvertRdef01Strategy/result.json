@@ -1,0 +1,8 @@
+{
+  "comSelect" : 1,
+  "comDetail1Choice" : {
+    "legstar.test.avro.rdef01.ComDetail2" : {
+      "comAmount" : "\u0003Ð"
+    }
+  }
+}

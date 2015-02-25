@@ -3,8 +3,8 @@ package com.legstar.avro.cob2avro;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 
-import com.legstar.base.FromHostResult;
 import com.legstar.base.converter.AbstractCob2ObjectConverter;
+import com.legstar.base.converter.FromHostResult;
 import com.legstar.base.type.composite.CobolComplexType;
 
 /**
@@ -27,9 +27,9 @@ public class Cob2AvroGenericConverter extends AbstractCob2ObjectConverter < Gene
      */
     private final Schema schema;
 
-    public FromHostResult < GenericRecord > convert(byte[] hostData, int start) {
+    public FromHostResult < GenericRecord > convert(byte[] hostData, int start, int length) {
         Cob2AvroVisitor visitor = new Cob2AvroVisitor(getCobolContext(), hostData,
-                start, getCustomChoiceStrategy(), getCustomVariables(), schema);
+                start, length, getCustomChoiceStrategy(), getCustomVariables(), schema);
         visitor.visit(getCobolComplexType());
         return new FromHostResult < GenericRecord >(visitor.getLastPos(),
                 (GenericRecord) visitor.getResultObject());
@@ -66,7 +66,7 @@ public class Cob2AvroGenericConverter extends AbstractCob2ObjectConverter < Gene
         super(builder);
         schema = builder.schema;
         if (schema == null) {
-            throw new IllegalArgumentException("You must provide a valid ouput Avro Schema");
+            throw new IllegalArgumentException("You must provide a valid Avro Schema");
         }
     }
 

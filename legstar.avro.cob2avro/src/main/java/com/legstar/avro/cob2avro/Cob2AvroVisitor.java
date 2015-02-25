@@ -10,7 +10,6 @@ import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
 
-import com.legstar.base.ConversionException;
 import com.legstar.base.context.CobolContext;
 import com.legstar.base.type.CobolType;
 import com.legstar.base.type.composite.CobolArrayType;
@@ -38,21 +37,25 @@ public class Cob2AvroVisitor extends FromCobolVisitor {
     // -----------------------------------------------------------------------------
     // Constructors
     // -----------------------------------------------------------------------------
-    public Cob2AvroVisitor(CobolContext cobolContext, byte[] hostData,
-            int start, Schema schema) {
-        this(cobolContext, hostData, start, null, schema);
+    public Cob2AvroVisitor(CobolContext cobolContext, byte[] hostData, Schema schema) {
+        this(cobolContext, hostData, 0, hostData.length, null, schema);
     }
 
     public Cob2AvroVisitor(CobolContext cobolContext, byte[] hostData,
-            int start, FromCobolChoiceStrategy customChoiceStrategy,
+            int start, int length, Schema schema) {
+        this(cobolContext, hostData, start, length, null, schema);
+    }
+
+    public Cob2AvroVisitor(CobolContext cobolContext, byte[] hostData,
+            int start, int length, FromCobolChoiceStrategy customChoiceStrategy,
             Schema schema) {
-        this(cobolContext, hostData, start, customChoiceStrategy, null, schema);
+        this(cobolContext, hostData, start, length, customChoiceStrategy, null, schema);
     }
 
     public Cob2AvroVisitor(CobolContext cobolContext, byte[] hostData,
-            int start, FromCobolChoiceStrategy customChoiceStrategy,
+            int start, int length, FromCobolChoiceStrategy customChoiceStrategy,
             Set < String > customVariables, Schema schema) {
-        super(cobolContext, hostData, start, customChoiceStrategy,
+        super(cobolContext, hostData, start, length, customChoiceStrategy,
                 customVariables);
         currentSchema = schema;
         primitiveTypeHandler = new AvroPrimitiveTypeHandler();
@@ -62,23 +65,23 @@ public class Cob2AvroVisitor extends FromCobolVisitor {
     // -----------------------------------------------------------------------------
     // Visit methods
     // -----------------------------------------------------------------------------
-    public void visit(CobolComplexType type) throws ConversionException {
+    public void visit(CobolComplexType type) {
         GenericRecord record = new GenericData.Record(currentSchema);
         super.visitComplexType(type, new AvroComplexTypeChildHandler(record));
         resultObject = record;
     }
 
-    public void visit(CobolArrayType type) throws ConversionException {
+    public void visit(CobolArrayType type) {
         final List < Object > list = new ArrayList < Object >();
         super.visitCobolArrayType(type, new AvroArrayTypeItemHandler(list));
         resultObject = list;
     }
 
-    public void visit(CobolChoiceType type) throws ConversionException {
+    public void visit(CobolChoiceType type) {
         super.visitCobolChoiceType(type, choiceTypeHandler);
     }
 
-    public void visit(CobolPrimitiveType < ? > type) throws ConversionException {
+    public void visit(CobolPrimitiveType < ? > type) {
         super.visitCobolPrimitiveType(type, primitiveTypeHandler);
     }
 
@@ -183,6 +186,8 @@ public class Cob2AvroVisitor extends FromCobolVisitor {
                 // TODO there is a risk of overflow here but Avro does not have
                 // unsigned int/long
                 resultObject = ((BigInteger) value).longValue();
+            } else if (value instanceof Short) {
+                resultObject = ((Short) value).intValue();
             } else {
                 resultObject = value;
             }

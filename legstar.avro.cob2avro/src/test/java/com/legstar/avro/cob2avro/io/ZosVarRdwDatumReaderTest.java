@@ -44,7 +44,7 @@ public class ZosVarRdwDatumReaderTest {
         File inFile = new File("src/test/data/ZOS.FCUSTDAT.RDW.bin");
         FileInputStream is = new FileInputStream(inFile);
         
-        // Read one byte (means first record read by reader is trubcated)
+        // Read one byte (means first record read by reader is truncated)
         is.read();
         
         ZosVarRdwDatumReader<CustomerData> datumReader = new ZosVarRdwDatumReader<CustomerData>(

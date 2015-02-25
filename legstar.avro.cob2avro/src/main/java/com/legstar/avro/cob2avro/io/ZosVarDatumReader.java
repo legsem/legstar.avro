@@ -22,9 +22,6 @@ import com.legstar.base.visitor.FromCobolChoiceStrategy;
  * processed.
  * <p/>
  * Turns each mainframe record into an Avro specific class instance.
- * <p/>
- * Offers optional seek capability to position stream at start of a record (with
- * help of a custom {@link ZosRecordMatcher} to be provided).
  * 
  * @param <D>
  */
@@ -57,7 +54,10 @@ public class ZosVarDatumReader<D> extends AbstractZosDatumReader < D > {
     }
 
     /**
-     * Reads a full record from the stream.
+     * Reads a record from the stream.
+     * <p/>
+     * Because this reader has no means to know the record length, it just fills
+     * the input buffer.
      * <p/>
      * We might have data read in excess last time that we still need to process
      * so this will push unprocessed bytes (residual) at the start of the buffer
@@ -67,10 +67,10 @@ public class ZosVarDatumReader<D> extends AbstractZosDatumReader < D > {
      * @param hostBytes a buffer where to read the record
      * @param processed the number of bytes that were processed following the
      *            previous read operation.
-     * @return the number of bytes read from the stream
+     * @return the status of the read operation, including the number of bytes read from the stream
      * @throws IOException
      */
-    public int readRecord(byte[] hostBytes, final int processed)
+    public ReadRecordStatus readRecord(byte[] hostBytes, final int processed)
             throws IOException {
 
         if (getBytesPrefetched() > 0) {
@@ -87,7 +87,7 @@ public class ZosVarDatumReader<D> extends AbstractZosDatumReader < D > {
         if (residual == hostBytes.length) {
             lastCount = 0;
             // Buffer is already filled
-            return residual;
+            return new ReadRecordStatus(residual);
         } else if (residual > 0) {
             // Move residual at start of buffer
             System.arraycopy(hostBytes, processed, hostBytes, 0, residual);
@@ -98,12 +98,12 @@ public class ZosVarDatumReader<D> extends AbstractZosDatumReader < D > {
         if (lastCount == -1) {
             if (residual > 0) {
                 lastCount = 0;
-                return residual;
+                return new ReadRecordStatus(residual);
             } else {
-                return lastCount;
+                return new ReadRecordStatus(lastCount);
             }
         }
-        return residual + lastCount;
+        return new ReadRecordStatus(residual + lastCount);
     }
 
     public int hostBytesPrefixLen() {

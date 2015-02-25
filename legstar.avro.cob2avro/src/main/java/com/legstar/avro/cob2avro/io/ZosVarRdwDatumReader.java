@@ -54,10 +54,10 @@ public class ZosVarRdwDatumReader<D> extends AbstractZosDatumReader < D > {
      * Otherwise we start by reading the rdw and the actual record.
      * 
      * @param hostBytes a buffer where to read the record
-     * @return the number of bytes read from the stream
+     * @return the status of the read operation, including the number of bytes read from the stream
      * @throws IOException
      */
-    public int readRecord(byte[] hostBytes, int processed) throws IOException {
+    public ReadRecordStatus readRecord(byte[] hostBytes, int processed) throws IOException {
         int bytesRead = 0;
         if (getBytesPrefetched() == 0) {
             bytesRead = readFully(hostBytes, 0, RDW_LEN);
@@ -72,7 +72,7 @@ public class ZosVarRdwDatumReader<D> extends AbstractZosDatumReader < D > {
                 - getBytesPrefetched() + RDW_LEN);
 
         setBytesPrefetched(0);
-        return bytesRead;
+        return new ReadRecordStatus(recordLen, bytesRead);
     }
 
     /**

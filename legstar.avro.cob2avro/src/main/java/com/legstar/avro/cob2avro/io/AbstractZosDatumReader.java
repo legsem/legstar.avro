@@ -14,8 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.legstar.avro.cob2avro.Cob2AvroGenericConverter;
-import com.legstar.base.FromHostResult;
 import com.legstar.base.context.CobolContext;
+import com.legstar.base.converter.FromHostResult;
 import com.legstar.base.finder.CobolTypeFinder;
 import com.legstar.base.type.composite.CobolComplexType;
 import com.legstar.base.visitor.FromCobolChoiceStrategy;
@@ -32,7 +32,11 @@ import com.legstar.base.visitor.FromCobolChoiceStrategy;
  */
 public abstract class AbstractZosDatumReader<D> implements Iterator < D >,
         Iterable < D >, Closeable {
+    
+    /** No 01 level item can be larger than this (COBOL for z/OS) */
+    private static final int MAX_COBOL_RECORD_LEN = 134217727; 
 
+    /** Buffer holding the last record read. */
     private final byte[] hostBytes;
 
     /**
@@ -46,7 +50,7 @@ public abstract class AbstractZosDatumReader<D> implements Iterator < D >,
      */
     private final Cob2AvroGenericConverter converter;
 
-    /** How many bytes of the original stream were not read yet */
+    /** Total size of the input stream */
     private long available;
 
     /** How many bytes of the original stream were already read */
@@ -90,8 +94,14 @@ public abstract class AbstractZosDatumReader<D> implements Iterator < D >,
                 .cobolContext(cobolContext).cobolComplexType(cobolComplexType)
                 .customChoiceStrategy(customChoiceStrategy).schema(schema)
                 .build();
-        this.hostBytes = new byte[cobolComplexType.getMaxBytesLen()
-                + hostBytesPrefixLen()];
+        long recordLen = cobolComplexType.getMaxBytesLen();
+        if (recordLen > MAX_COBOL_RECORD_LEN) {
+            log.warn("Record maximum length of "
+                    + cobolComplexType.getMaxBytesLen()
+                    + " exceeds the maximum " + MAX_COBOL_RECORD_LEN);
+            recordLen = MAX_COBOL_RECORD_LEN;
+        }
+        this.hostBytes = new byte[(int) recordLen + hostBytesPrefixLen()];
         this.available = length;
     }
 
@@ -106,9 +116,14 @@ public abstract class AbstractZosDatumReader<D> implements Iterator < D >,
     @SuppressWarnings("unchecked")
     public D next() {
         try {
-            bytesRead += readRecord(hostBytes, lastProcessed);
+            ReadRecordStatus status = readRecord(hostBytes, lastProcessed);
+            bytesRead += status.getBytesRead();
+            int prefixLen = hostBytesPrefixLen();
             FromHostResult < GenericRecord > result = converter.convert(
-                    hostBytes, hostBytesPrefixLen());
+                    hostBytes,
+                    prefixLen,
+                    status.getRecordLen() == -1 ? hostBytes.length : status
+                            .getRecordLen() + prefixLen);
             bytesProcessed += lastProcessed = result.getBytesProcessed();
             D specific = (D) SpecificData.get().deepCopy(
                     result.getValue().getSchema(), result.getValue());
@@ -182,11 +197,41 @@ public abstract class AbstractZosDatumReader<D> implements Iterator < D >,
      * @param hostBytes a buffer where to read the record
      * @param processed the number of bytes in hostBytes that were processed
      *            following the previous read operation.
-     * @return the number of bytes read from the stream
+     * @return the status of the read operation, including the number of bytes read from the stream
      * @throws IOException
      */
-    public abstract int readRecord(byte[] hostBytes, int processed)
+    public abstract ReadRecordStatus readRecord(byte[] hostBytes, int processed)
             throws IOException;
+    
+    /**
+     * After a record is read, this gives the actual record length (if known)
+     * and the number of bytes read off the stream to complete the record.
+     * 
+     */
+    public class ReadRecordStatus {
+
+        private final int recordLen;
+
+        public int getRecordLen() {
+            return recordLen;
+        }
+
+        public int getBytesRead() {
+            return bytesRead;
+        }
+
+        private final int bytesRead;
+
+        public ReadRecordStatus(int bytesRead) {
+            this.recordLen = -1;
+            this.bytesRead = bytesRead;
+        }
+
+        public ReadRecordStatus(int recordLen, int bytesRead) {
+            this.recordLen = recordLen;
+            this.bytesRead = bytesRead;
+        }
+    }
 
     /**
      * In the case where the host data is laid out with a fixed prefix before
