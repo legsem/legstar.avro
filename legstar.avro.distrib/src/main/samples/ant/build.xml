@@ -1,0 +1,51 @@
+<project name="cob2avro-sample" default="run" basedir=".">
+
+    <!-- Generates and compiles samples                             -->
+    <!-- Runs the pure java sample                                  -->
+
+    <property name="libdir" location="../lib"/>
+    <property name="cobdir" location="cobol"/>
+    <property name="javadir" location="java"/>
+    <property name="gendir" location="gen"/>
+    <property name="genjavadir" location="${gendir}/java"/>
+    <property name="genpkgpfx" value="com.legstar.avro.samples"/>
+    <property name="bindir" location="bin"/>
+
+    <!-- Classpath for generation and compilation-->
+    <path id="project.class.path">
+        <fileset dir="${libdir}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+    <property name="project.classpath" refid="project.class.path"/>
+
+    <target name="init">
+        <mkdir dir="${bindir}"/>
+    </target>
+
+    <target name="generate" depends="init">
+        <java classname="com.legstar.avro.generator.Cob2AvroGeneratorMain" fork="true" failonerror="true">
+            <arg line="-i ${cobdir} -o ${gendir} -p ${genpkgpfx}"/>
+            <classpath path="${project.classpath}"/>
+        </java>
+    </target>
+
+    <target name="compile" depends="generate">
+        <javac srcdir="${genjavadir}:${javadir}" destdir="${bindir}" source="1.6" debug="true">
+            <classpath>
+                <pathelement path="${project.classpath}"/>
+                <pathelement location="${bindir}"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="run" depends="compile">
+        <java classname="${genpkgpfx}.custdat.CustdatReader" fork="true" failonerror="true">
+            <classpath>
+                <pathelement path="${project.classpath}"/>
+                <pathelement location="${bindir}"/>
+            </classpath>
+        </java>
+    </target>
+
+</project>
